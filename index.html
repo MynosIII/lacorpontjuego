@@ -738,7 +738,7 @@ function runSector(k){
 function sectorRows(){ return S.sectors.map(s=>`<div class="sector"><span>${s.name}</span><span>Tara ${s.f(s.t)} · Bern ${s.f(s.b)}</span><span class="w ${s.win?'t':'b'}">${s.win?'TARA':'BERN'}</span></div>`).join(''); }
 function sectorCard(k){
   const won=S.sectors.filter(s=>s.win).length, lost=S.sectors.length-won;
-  const decided = won>=2 || lost>=2 || k===2;
+  const decided = k===2; // siempre se corren los tres sectores, también el enduro
   show(`<section><div class="eyebrow">Final · tras ${S.sectors.length} de 3 sectores</div><h1>${won} – ${lost}</h1>
     <div class="sectors">${sectorRows()}</div>
     <button class="btn" type="button" id="go">${decided?'Bandera a cuadros':'Siguiente sector'}</button></section>`);
