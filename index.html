@@ -375,7 +375,7 @@ function gEnduro(stage, done, secs=60){
   const W=380, H=540, dpr=window.devicePixelRatio||1;
   canvas.width=W*dpr; canvas.height=H*dpr; ctx.scale(dpr,dpr);
 
-  const GOAL=15, TIME_LIMIT=secs;
+  const GOAL=12, TIME_LIMIT=secs;
   const ROAD_TOP_Y=100, ROAD_BOT_Y=H, HORIZON_Y=80, ROAD_TOP_W=40, ROAD_BOT_W=320;
   const PW=50, PH=80, PLAYER_Y=H-PH-14, PLYR_SPD=2.8, ROAD_MARGIN=16;
   const SPD_BASE=1.0, SPD_CAP=2.6, RAMP_TIME=TIME_LIMIT*0.67, ACCEL_RATE=0.8, BRAKE_RATE=3.0, BASE_ADV=0.30;
@@ -510,7 +510,7 @@ function gEnduro(stage, done, secs=60){
     else if(speedMult<ramp) speedMult=Math.min(speedMult+dt*0.8,ramp); else speedMult=Math.max(speedMult-dt*0.4,ramp);
   }
   function hud(){ const t=Math.max(0,timeLeft); eT.textContent=`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
-    eP.textContent=`Pasados ${passed}`; eC.textContent=`Choques ${crashCount}/${MAX_CRASHES}`; }
+    eP.textContent=`Pasados ${passed}/${GOAL}`; eC.textContent=`Choques ${crashCount}/${MAX_CRASHES}`; }
   function update(dt){
     if(!isFinished){ timeLeft-=dt; if(timeLeft<=0){ timeLeft=0; finishLineY=0.02; isFinished=true; } }
     if(isFinished){ finishLineY+=speedMult*BASE_ADV*dt; if(finishLineY>=1.05 || speedMult<0.05){ end('time'); return; } }
