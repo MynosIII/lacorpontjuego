@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tara contra Ravenrock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: una sola columna tipo pantalla de cronometraje; cabecera con el calendario de carreras, debajo la pantalla activa (historia, minijuego o resultado). Tema oscuro único, elegido a propósito. */
+:root{
+  --asphalt:#11151c;
+  --panel:#1a2029;
+  --line:#2b3441;
+  --ink:#e7ebf0;
+  --muted:#8b97a7;
+  --amber:#ffb81c;
+  --teal:#38cfc6;
+  --red:#ff3a3a;
+  --good:#52d888;
+  --bad:#ff6b5e;
+  --f-display:"Saira Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{min-height:100%}
+body{background:var(--asphalt);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.app{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-block:6px 14px;border-bottom:1px solid var(--line)}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase}
+.brand span{color:var(--muted);font-weight:600;text-transform:lowercase;letter-spacing:0;margin-inline:.2em}
+.brand em{font-style:normal;color:var(--amber)}
+.pips{display:flex;gap:6px;font-family:var(--f-mono);font-size:.72rem}
+.pip{min-width:38px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.pip.now{border-color:var(--amber);color:var(--amber)}
+.pip.done{background:var(--panel);color:var(--ink)}
+.pip.fin{border-style:dashed}
+main{padding-block:28px 0}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,6vw,3rem);line-height:1.02;margin:0 0 18px;text-wrap:balance;text-transform:uppercase;letter-spacing:.01em}
+h2{font-family:var(--f-display);font-weight:600;font-size:1.3rem;margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em}
+.story p{max-width:62ch;margin:0 0 14px;color:var(--ink)}
+.story p.note{color:var(--muted);font-size:.92rem;border-left:2px solid var(--amber);padding-left:12px}
+.btn{font-family:var(--f-display);font-weight:800;font-size:1.15rem;letter-spacing:.08em;text-transform:uppercase;background:var(--amber);color:#1a1300;border:0;border-radius:4px;padding:12px 26px;cursor:pointer;margin-top:12px}
+.btn:hover{filter:brightness(1.08)}
+.btn:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--f-mono);font-size:.8rem;color:var(--muted);margin-bottom:18px}
+.how{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px;max-width:62ch}
+.how b{color:var(--amber);font-weight:600}
+kbd{font-family:var(--f-mono);font-size:.78rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:0 5px;color:var(--ink)}
+/* stage */
+.hud{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--f-mono);font-size:.78rem;color:var(--muted);margin-bottom:12px}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:18px;min-height:360px;user-select:none;-webkit-user-select:none}
+.readout{font-family:var(--f-mono);font-weight:700;font-size:1.25rem;min-height:1.6em;text-align:center;font-variant-numeric:tabular-nums}
+.readout.good{color:var(--good)}.readout.bad{color:var(--bad)}
+.trylog{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;font-family:var(--f-mono);font-size:.78rem;color:var(--muted);min-height:1.4em}
+.trylog span{border:1px solid var(--line);border-radius:3px;padding:1px 6px}
+.pad{font-family:var(--f-display);font-weight:800;font-size:1.4rem;letter-spacing:.12em;width:min(100%,340px);padding:20px;border-radius:6px;border:2px solid var(--amber);background:transparent;color:var(--amber);cursor:pointer;touch-action:manipulation}
+.pad:active{background:var(--amber);color:#1a1300}
+.hint{font-size:.8rem;color:var(--muted);text-align:center}
+/* luces */
+.lights{display:flex;gap:10px;padding:12px;background:#07090c;border-radius:6px}
+.pod{display:flex;flex-direction:column;gap:6px;padding:6px;background:#191c21;border-radius:5px}
+.pod i{width:clamp(26px,8vw,40px);aspect-ratio:1;border-radius:50%;background:#2a1616;display:block}
+.pod.on i{background:var(--red);box-shadow:0 0 18px var(--red)}
+/* tacómetro */
+.tacho{width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.gear{font-family:var(--f-mono);font-weight:700;font-size:3.2rem;line-height:1;color:var(--amber)}
+.gearlbl{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);letter-spacing:.14em}
+.rpmwrap{position:relative;width:100%;height:46px;background:#0b0e12;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.rpmzone{position:absolute;top:0;bottom:0;left:82%;width:12%;background:rgba(82,216,136,.22);border-left:2px solid var(--good);border-right:2px solid var(--good)}
+.rpmzone::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--good)}
+.rpmfill{position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,var(--teal),var(--amber) 75%,var(--red))}
+.rpmticks{display:flex;justify-content:space-between;width:100%;font-family:var(--f-mono);font-size:.68rem;color:var(--muted)}
+/* frenada */
+.corner{font-family:var(--f-display);font-weight:600;font-size:1.2rem;letter-spacing:.06em;text-transform:uppercase}
+.strip{position:relative;width:100%;max-width:560px;height:74px;background:repeating-linear-gradient(90deg,#1e242d 0 40px,#1b2028 40px 80px);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.strip::after{content:"";position:absolute;right:0;top:0;bottom:0;width:10px;background:repeating-linear-gradient(0deg,var(--red) 0 8px,#f2f2f2 8px 16px)}
+.zone{position:absolute;top:0;bottom:0;background:rgba(255,184,28,.22);border-left:2px solid var(--amber)}
+.zone b{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff}
+.car{position:absolute;top:50%;width:34px;height:18px;margin:-9px 0 0 -34px;background:var(--amber);border-radius:4px 9px 9px 4px;box-shadow:0 0 0 2px #0b0e12}
+.car.stop{background:var(--teal)}
+/* tráfico */
+.dodgehud{display:flex;justify-content:space-between;width:100%;max-width:420px;font-family:var(--f-mono);font-size:.9rem;font-variant-numeric:tabular-nums}
+canvas{display:block;border-radius:6px;max-width:100%}
+.lr{display:flex;gap:12px;width:100%;max-width:420px}
+.lr button,.arrows button{flex:1;font-size:1.6rem;padding:14px;border-radius:6px;border:1px solid var(--line);background:#0f1318;color:var(--ink);cursor:pointer;touch-action:manipulation}
+.lr button:active,.arrows button:active{background:var(--amber);color:#1a1300}
+/* boxes */
+.seq{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:520px}
+.seq span{width:44px;height:44px;display:grid;place-items:center;font-size:1.4rem;border:1px solid var(--line);border-radius:5px;background:#0f1318;color:var(--muted)}
+.seq span.cur{border-color:var(--amber);color:var(--amber);box-shadow:0 0 0 2px rgba(255,184,28,.25)}
+.seq span.ok{background:rgba(82,216,136,.16);border-color:var(--good);color:var(--good)}
+.seq.err span.cur{border-color:var(--bad);color:var(--bad)}
+.arrows{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,56px);gap:8px}
+.arrows button{padding:0;font-size:1.4rem}
+.arrows [data-d="U"]{grid-column:2;grid-row:1}.arrows [data-d="L"]{grid-column:1;grid-row:2}.arrows [data-d="D"]{grid-column:2;grid-row:2}.arrows [data-d="R"]{grid-column:3;grid-row:2}
+.count{font-family:var(--f-display);font-weight:800;font-size:4rem;color:var(--amber);line-height:1}
+/* resultado */
+.result{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:end;margin-bottom:22px}
+.bigpos{font-family:var(--f-display);font-weight:800;font-size:clamp(4.5rem,18vw,7rem);line-height:.85;color:var(--amber)}
+.bigpos.mid{color:var(--ink)}.bigpos.low{color:var(--muted)}
+.result .det{font-family:var(--f-mono);font-size:.88rem;color:var(--muted)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+@media (max-width:560px){.cols{grid-template-columns:1fr}}
+.board{list-style:none;margin:0;padding:0;font-family:var(--f-mono);font-size:.86rem;border-top:1px solid var(--line)}
+.board li{display:grid;grid-template-columns:3.2em 1fr;padding:5px 4px;border-bottom:1px solid var(--line)}
+.board li b{color:var(--muted);font-weight:500}
+.board li.me{background:rgba(255,184,28,.12);color:var(--amber)}
+.board li.me b{color:var(--amber)}
+.board li.lea{color:var(--teal)}
+.board li.dnf{color:var(--bad)}
+.avg{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.avg .n{font-family:var(--f-mono);font-weight:700;font-size:2rem;font-variant-numeric:tabular-nums}
+.avg .n.ok{color:var(--good)}.avg .n.no{color:var(--bad)}
+.avg p{margin:6px 0 0;font-size:.88rem;color:var(--muted)}
+.sum{width:100%;border-collapse:collapse;font-family:var(--f-mono);font-size:.86rem;margin-block:8px 18px}
+.sum td,.sum th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.sum th{color:var(--muted);font-weight:500;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}
+.sectors{display:flex;flex-direction:column;gap:8px;width:100%;max-width:520px}
+.sector{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:5px;font-family:var(--f-mono);font-size:.86rem}
+.sector .w{font-weight:700}.sector .w.t{color:var(--good)}.sector .w.b{color:var(--bad)}
+.tablewrap{overflow-x:auto}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><em>Tara</em><span>contra</span>Ravenrock</div>
+    <div class="pips" id="pips"></div>
+  </header>
+  <main id="screen"></main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const screenEl = $('#screen');
+const rnd = (a,b) => a + Math.random()*(b-a);
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const fmtS = ms => (ms/1000).toFixed(3).replace('.',',');
+const fmt1 = n => n.toFixed(1).replace('.',',');
+const posLow = (v,th) => { for(let i=0;i<th.length;i++) if(v<th[i]) return i+1; return 10; };
+const posHigh = (v,th) => { for(let i=0;i<th.length;i++) if(v>=th[i]) return i+1; return 10; };
+
+/* ---------- entrada ---------- */
+let cur = null, cleanup = null;
+function stopGame(){ if(cleanup){ cleanup(); cleanup=null; } cur=null; }
+document.addEventListener('keydown', e => {
+  if(!cur) return;
+  const k = e.key;
+  const map = {ArrowLeft:'L',a:'L',A:'L',ArrowRight:'R',d:'R',D:'R',ArrowUp:'U',w:'U',W:'U',ArrowDown:'D',s:'D',S:'D'};
+  if(k===' '||k==='Enter'){ e.preventDefault(); if(!e.repeat && cur.press) cur.press(); }
+  else if(map[k]){ e.preventDefault(); if(e.repeat) return; const d=map[k];
+    if(d==='L' && cur.left) cur.left(); if(d==='R' && cur.right) cur.right(); if(cur.arrow) cur.arrow(d); }
+});
+function bindPad(stage, fn){ stage.querySelector('.pad').addEventListener('pointerdown', e => { e.preventDefault(); fn(); }); }
+
+/* ---------- minijuego 1: largada ---------- */
+function gStart(stage, done, tries=3){
+  stage.innerHTML = `<div class="lights">${'<div class="pod"><i></i><i></i></div>'.repeat(5)}</div>
+    <div class="readout" id="gm">Preparate…</div><div class="trylog" id="tl"></div>
+    <button class="pad" type="button">ACELERAR</button><div class="hint"><kbd>ESPACIO</kbd> o tocá el botón</div>`;
+  const pods=[...stage.querySelectorAll('.pod')], gm=stage.querySelector('#gm'), tl=stage.querySelector('#tl');
+  let phase='idle', t0=0, timers=[], times=[];
+  const T=(f,ms)=>timers.push(setTimeout(f,ms));
+  const clear=()=>{ timers.forEach(clearTimeout); timers=[]; };
+  const say=(t,c='')=>{ gm.textContent=t; gm.className='readout '+c; };
+  function round(){
+    phase='lights'; pods.forEach(p=>p.classList.remove('on')); say('Esperá a que se apaguen…');
+    for(let i=0;i<5;i++) T(()=>pods[i].classList.add('on'), 600+i*700);
+    T(()=>{ pods.forEach(p=>p.classList.remove('on')); phase='go'; t0=performance.now(); say('¡YA!','good');
+      T(()=>{ if(phase==='go') record(1000,'Tarde · 1,000 s','bad'); }, 1000);
+    }, 600+4*700+500+Math.random()*1800);
+  }
+  function record(ms,label,c){
+    clear(); phase='wait'; times.push(ms); say(label,c);
+    tl.innerHTML = times.map((t,i)=>`<span>L${i+1} ${fmtS(t)}</span>`).join('');
+    if(times.length<tries) T(round,1500); else T(finish,1300);
+  }
+  function finish(){ const avg=times.reduce((a,b)=>a+b,0)/times.length; stopGame();
+    done({value:avg, detail: tries>1 ? `Reacción media ${fmtS(avg)} s` : `Reacción ${fmtS(avg)} s`}); }
+  const press=()=>{
+    if(phase==='lights'){ pods.forEach(p=>p.classList.remove('on')); record(600,'Largada en falso · cuenta 0,600 s','bad'); }
+    else if(phase==='go'){ const rt=performance.now()-t0; record(rt, `${fmtS(rt)} s`, rt<300?'good':''); }
+  };
+  cur={press}; cleanup=clear; bindPad(stage,press); T(round,700);
+}
+
+/* ---------- minijuego 2: cambios ---------- */
+function gShift(stage, done, shifts=7){
+  stage.innerHTML = `<div class="tacho"><div class="gearlbl">MARCHA</div><div class="gear" id="gear">1</div>
+    <div class="rpmwrap"><div class="rpmzone"></div><div class="rpmfill" id="fill"></div></div>
+    <div class="rpmticks"><span>3</span><span>5</span><span>7</span><span>9</span><span>11</span><span>13 ×1000 rpm</span></div></div>
+    <div class="readout" id="gm">Cambiá en la franja verde</div><div class="trylog" id="tl"></div>
+    <button class="pad" type="button">CAMBIAR</button><div class="hint"><kbd>ESPACIO</kbd> o tocá el botón</div>`;
+  const fill=stage.querySelector('#fill'), gearEl=stage.querySelector('#gear'), gm=stage.querySelector('#gm'), tl=stage.querySelector('#tl');
+  const IDEAL=88, LO=82, HI=94;
+  let gear=1, rpm=30, errs=[], start=0, raf=0, paused=true, hold=0;
+  const dur=()=>1450-gear*85;
+  function loop(now){
+    if(!paused){
+      const t=(now-start)/dur();
+      rpm = 30 + 70*Math.min(1, 0.6*t + 0.4*t*t);
+      if(t>=1) shift(true);
+    }
+    fill.style.width = rpm+'%';
+    raf=requestAnimationFrame(loop);
+  }
+  function shift(limiter){
+    if(paused) return;
+    paused=true;
+    let err, label, c;
+    if(limiter){ err=25; label='Limitador · perdés tiempo'; c='bad'; }
+    else { err=Math.abs(rpm-IDEAL);
+      if(rpm<LO){ label='Muy pronto'; c='bad'; } else if(rpm>HI){ label='Muy tarde'; c='bad'; }
+      else { label = err<1.5 ? '¡Perfecto!' : 'Buen cambio'; c='good'; } }
+    errs.push(err); gm.textContent=label; gm.className='readout '+c;
+    tl.innerHTML = errs.map((e,i)=>`<span>${i+1}→${i+2} ${e>=25?'LIM':'±'+fmt1(e)}</span>`).join('');
+    if(errs.length>=shifts){ hold=setTimeout(()=>{ const avg=errs.reduce((a,b)=>a+b,0)/errs.length; stopGame();
+      done({value:avg, detail:`Error medio de cambio ±${fmt1(avg)}`}); }, 900); return; }
+    hold=setTimeout(()=>{ gear++; gearEl.textContent=gear; rpm=30; start=performance.now(); paused=false; }, 450);
+  }
+  const press=()=>shift(false);
+  cur={press}; cleanup=()=>{ cancelAnimationFrame(raf); clearTimeout(hold); };
+  bindPad(stage,press);
+  raf=requestAnimationFrame(loop);
+  hold=setTimeout(()=>{ start=performance.now(); paused=false; }, 900);
+}
+
+/* ---------- minijuego 3: frenadas ---------- */
+function gBrake(stage, done, n=6){
+  const names=['Curva 1 · Horquilla','Curva 4 · Chicana del Lago','Curva 7 · La Cuesta','Curva 9 · Mirador','Curva 11 · El Embudo','Curva 14 · Última'];
+  stage.innerHTML = `<div class="corner" id="cn"></div>
+    <div class="strip"><div class="zone" id="zone"><b></b></div><div class="car" id="car"></div></div>
+    <div class="readout" id="gm"></div><div class="trylog" id="tl"></div>
+    <button class="pad" type="button">FRENAR</button><div class="hint"><kbd>ESPACIO</kbd> o tocá el botón · apuntá a la línea blanca</div>`;
+  const zone=stage.querySelector('#zone'), car=stage.querySelector('#car'), gm=stage.querySelector('#gm'), tl=stage.querySelector('#tl'), cn=stage.querySelector('#cn');
+  let i=0, zs=0, w=0, ideal=0, d=0, x=0, start=0, phase='wait', raf=0, hold=0, scores=[];
+  function setup(){
+    cn.textContent=`${names[i]} (${i+1}/${n})`;
+    w = 10 - i*0.8; zs = rnd(55, 86-w); ideal = zs + w/2; d = 1750 - i*90;
+    zone.style.left=zs+'%'; zone.style.width=w+'%';
+    x=0; car.style.left='0%'; car.classList.remove('stop');
+    gm.textContent='…'; gm.className='readout';
+    hold=setTimeout(()=>{ phase='run'; start=performance.now(); }, 700);
+  }
+  function loop(now){
+    if(phase==='run'){
+      const t=(now-start)/d; x = 100*Math.min(1, 0.35*t + 0.65*t*t);
+      car.style.left = x+'%';
+      if(t>=1) score(true);
+    }
+    raf=requestAnimationFrame(loop);
+  }
+  function score(missed){
+    if(phase!=='run') return; phase='wait'; car.classList.add('stop');
+    let s, label, c;
+    if(missed){ s=0; label='Sin frenar · a la grava'; c='bad'; }
+    else if(x<zs){ s=Math.max(0, 62-(zs-x)*5); label='Frenaste temprano'; c='bad'; }
+    else if(x<=zs+w){ s=100-Math.abs(x-ideal)/(w/2)*30; label = s>=95 ? '¡Frenada perfecta!' : 'Buena frenada'; c='good'; }
+    else { s=8; label='Tarde · te pasás de largo'; c='bad'; }
+    s=Math.round(s); scores.push(s); gm.textContent=`${label} · ${s}`; gm.className='readout '+c;
+    tl.innerHTML = scores.map((v,k)=>`<span>C${k+1} ${v}</span>`).join('');
+    i++;
+    if(i>=n){ hold=setTimeout(()=>{ const avg=scores.reduce((a,b)=>a+b,0)/n; stopGame();
+      done({value:avg, detail:`Puntaje medio de frenada ${Math.round(avg)}/100`}); }, 1000); return; }
+    hold=setTimeout(setup, 1200);
+  }
+  const press=()=>score(false);
+  cur={press}; cleanup=()=>{ cancelAnimationFrame(raf); clearTimeout(hold); };
+  bindPad(stage,press); setup(); raf=requestAnimationFrame(loop);
+}
+
+/* ---------- minijuego 4: tráfico ---------- */
+function gDodge(stage, done, secs=30){
+  stage.innerHTML = `<div class="dodgehud"><span id="tm">${secs},0 s</span><span id="ht">Toques: 0</span></div>
+    <canvas id="cv"></canvas>
+    <div class="lr"><button type="button" data-d="L" aria-label="Carril izquierdo">◀</button><button type="button" data-d="R" aria-label="Carril derecho">▶</button></div>
+    <div class="hint"><kbd>←</kbd> <kbd>→</kbd> o los botones</div>`;
+  const cv=stage.querySelector('#cv'), ctx=cv.getContext('2d'), tm=stage.querySelector('#tm'), ht=stage.querySelector('#ht');
+  const W=Math.min(stage.clientWidth-32, 420), H=440, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px'; ctx.scale(dpr,dpr);
+  const LW=W/3, CW=Math.min(LW*0.52, 46), CH=74, PY=H-CH-22;
+  const cols=['#5b6676','#38cfc6','#c9ced6','#8e6bd9','#e05a4f','#4d8fe0'];
+  let lane=1, px=LW*1.5, cars=[], hits=0, inv=0, el=0, spawnT=0.9, off=0, last=0, raf=0, started=false, over=false;
+  const laneX=l=>LW*l+LW/2;
+  function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function drawCar(cx,y,color,me){
+    const x=cx-CW/2;
+    ctx.fillStyle='#0a0c10'; [[-4,10],[CW-4,10],[-4,CH-26],[CW-4,CH-26]].forEach(([dx,dy])=>{ ctx.fillRect(x+dx,y+dy,8,16); });
+    ctx.fillStyle=color; rr(x,y,CW,CH,9); ctx.fill();
+    ctx.fillStyle='rgba(10,12,16,.75)'; rr(x+6,y+(me?16:CH-34),CW-12,18,4); ctx.fill();
+    if(me){ ctx.fillStyle='#1a1300'; ctx.font='700 13px "JetBrains Mono",monospace'; ctx.textAlign='center'; ctx.fillText('T',cx,y+CH-14); }
+  }
+  function spawn(p){
+    const free=[0,1,2].filter(l=>!cars.some(c=>c.lane===l && c.y<CH*1.8));
+    if(!free.length) return;
+    const pick=shuffle(free);
+    const count = (Math.random() < 0.25+p*0.35 && pick.length>1) ? 2 : 1;
+    for(let k=0;k<count;k++) cars.push({lane:pick[k], y:-CH-k*rnd(0,30), color:cols[Math.floor(Math.random()*cols.length)]});
+  }
+  function frame(now){
+    if(!last) last=now; const dt=Math.min(0.05,(now-last)/1000); last=now;
+    if(started && !over){
+      el+=dt; const p=Math.min(1, el/secs);
+      const speed=280+p*240;
+      off=(off+speed*dt)%60;
+      spawnT-=dt; if(spawnT<=0){ spawn(p); spawnT = 0.85 - p*0.38; }
+      cars.forEach(c=>c.y+=speed*dt);
+      px += (laneX(lane)-px)*Math.min(1, dt*16);
+      inv=Math.max(0,inv-dt);
+      for(const c of cars){
+        if(c.hit) continue;
+        if(Math.abs(laneX(c.lane)-px) < CW*0.85 && c.y+CH > PY+6 && c.y < PY+CH-6){
+          if(inv<=0){ hits++; inv=1.1; ht.textContent='Toques: '+hits; }
+          c.hit=true;
+        }
+      }
+      cars=cars.filter(c=>c.y<H+10 && !c.hit);
+      tm.textContent = fmt1(Math.max(0,secs-el))+' s';
+      if(el>=secs){ over=true; setTimeout(()=>{ stopGame(); done({value:hits, detail: hits===0?'Remontada limpia, sin toques':`${hits} toque${hits>1?'s':''} con el tráfico`}); }, 700); }
+    }
+    ctx.fillStyle='#161b22'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#2b3441'; for(let l=1;l<3;l++) for(let y=-60+off;y<H;y+=60) ctx.fillRect(LW*l-2,y,4,30);
+    ctx.fillStyle='#ff3a3a'; ctx.fillRect(0,0,4,H); ctx.fillRect(W-4,0,4,H);
+    cars.forEach(c=>drawCar(laneX(c.lane),c.y,c.color,false));
+    if(!(inv>0 && Math.floor(inv*10)%2)) drawCar(px,PY,'#ffb81c',true);
+    if(!started){ ctx.fillStyle='rgba(17,21,28,.7)'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#ffb81c'; ctx.textAlign='center'; ctx.font='800 40px "Saira Condensed",sans-serif'; ctx.fillText('VERDE EN 2 s',W/2,H/2); }
+    raf=requestAnimationFrame(frame);
+  }
+  const left=()=>{ if(lane>0) lane--; }, right=()=>{ if(lane<2) lane++; };
+  stage.querySelectorAll('.lr button').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); (b.dataset.d==='L'?left:right)(); }));
+  const go=setTimeout(()=>started=true, 2000);
+  cur={left,right}; cleanup=()=>{ cancelAnimationFrame(raf); clearTimeout(go); };
+  raf=requestAnimationFrame(frame);
+}
+
+/* ---------- minijuego 5: boxes ---------- */
+function gPit(stage, done, n=12){
+  const glyph={L:'←',R:'→',U:'↑',D:'↓'};
+  const seq=Array.from({length:n},()=>'LRUD'[Math.floor(Math.random()*4)]);
+  stage.innerHTML = `<div class="count" id="cd">3</div><div class="seq" id="sq">${seq.map(d=>`<span>${glyph[d]}</span>`).join('')}</div>
+    <div class="readout" id="gm">0,000 s</div>
+    <div class="arrows">${['U','L','D','R'].map(d=>`<button type="button" data-d="${d}" aria-label="${glyph[d]}">${glyph[d]}</button>`).join('')}</div>
+    <div class="hint">Flechas del teclado, <kbd>W A S D</kbd> o los botones · cada error suma 0,8 s</div>`;
+  const cells=[...stage.querySelectorAll('.seq span')], sq=stage.querySelector('#sq'), gm=stage.querySelector('#gm'), cd=stage.querySelector('#cd');
+  let idx=0, pen=0, t0=0, phase='count', raf=0, timers=[];
+  const T=(f,ms)=>timers.push(setTimeout(f,ms));
+  [2,1].forEach((v,k)=>T(()=>cd.textContent=v,(k+1)*700));
+  T(()=>{ cd.textContent='¡BOX!'; phase='run'; t0=performance.now(); cells[0].classList.add('cur'); }, 2100);
+  const total=()=>performance.now()-t0+pen*800;
+  function tick(){ if(phase==='run') gm.textContent=fmtS(total())+' s'+(pen?` (+${pen} error${pen>1?'es':''})`:''); raf=requestAnimationFrame(tick); }
+  function arrow(d){
+    if(phase!=='run') return;
+    if(d===seq[idx]){ cells[idx].classList.remove('cur'); cells[idx].classList.add('ok'); idx++;
+      if(idx>=n){ phase='done'; const v=total(); gm.textContent=fmtS(v)+' s'; cd.textContent='¡FUERA!';
+        T(()=>{ stopGame(); done({value:v, detail:`Parada de ${fmtS(v)} s${pen?` con ${pen} error${pen>1?'es':''}`:' sin errores'}`}); }, 1000); return; }
+      cells[idx].classList.add('cur');
+    } else { pen++; sq.classList.add('err'); T(()=>sq.classList.remove('err'),220); }
+  }
+  stage.querySelectorAll('.arrows button').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); arrow(b.dataset.d); }));
+  cur={arrow}; cleanup=()=>{ cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
+  raf=requestAnimationFrame(tick);
+}
+
+/* ---------- datos ---------- */
+const RIVALS=['Kaito Mura','Sofía Lenz','Dario Vence','Inés Halvo','Marco Petri','Yuri Domsk','Noa Reyes','Félix Andrade'];
+const RACES=[
+  {name:'GP de Apertura', track:'Circuito Nébula · 4,2 km · 18 vueltas', tag:'Largada', game:gStart, pos:v=>posLow(v,[230,265,300,340,390,450,520,620,800]),
+   how:'Cinco luces rojas se encienden una a una. Cuando se <b>apagan</b>, acelerá con <kbd>ESPACIO</kbd> o el botón. Son tres largadas y cuenta el promedio. Si salís antes de tiempo, esa largada cuenta como 0,600 s.'},
+  {name:'GP de Valdoria', track:'Valdoria Ring · 5,1 km · 15 vueltas', tag:'Cambios', game:gShift, pos:v=>posLow(v,[2.5,4,5.5,7,9,12,15,19,24]),
+   how:'Las revoluciones suben en cada marcha. Cambiá con <kbd>ESPACIO</kbd> cuando la barra esté en la <b>franja verde</b>, lo más cerca posible de su línea central. Si llegás al limitador perdés tiempo. Son siete cambios.'},
+  {name:'GP de Altamira', track:'Altamira Hillclimb · 3,8 km · 20 vueltas', tag:'Frenadas', game:gBrake, pos:v=>posHigh(v,[93,87,81,74,66,57,47,36,22]),
+   how:'Llegás lanzada a cada curva. Frená con <kbd>ESPACIO</kbd> dentro de la <b>zona de frenado</b>, lo más cerca posible de la línea blanca. Antes perdés tiempo, después te vas de largo. Seis curvas, cada vez más cerradas.'},
+  {name:'GP Nocturno de Porto Sal', track:'Callejero Porto Sal · 4,9 km · 22 vueltas', tag:'Tráfico', game:gDodge, pos:v=>posLow(v,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5]),
+   how:'Un toque en la vuelta 1 te manda al fondo. Remontá entre los rezagados: cambiá de carril con <kbd>←</kbd> <kbd>→</kbd> o los botones durante 30 segundos. <b>Cada toque te cuesta una posición.</b>'},
+  {name:'GP de Ravenrock', track:'Autódromo Ravenrock · 5,6 km · 25 vueltas', tag:'Boxes', game:gPit, pos:v=>posLow(v,[4200,5000,5800,6700,7700,8800,10000,12000,15000]),
+   how:'Leandro larga a tu lado, ahora como compañero de equipo. La carrera se define en boxes: repetí la secuencia de tu mecánico con las <b>flechas</b> lo más rápido que puedas. Cada error suma 0,8 s.'},
+];
+
+const BEATS=[
+  {src:'Liga Ravenrock · Temporada 7', title:'Años de rivalidad', paras:[
+    'Desde que debutaron en la misma parrilla, Tara y Leandro se reparten victorias, toques y titulares. En la liga de carreras virtuales nadie vende más que ese duelo.',
+    'Por encima de todos está Bern Ravenrock, presidente de la organización, y a su lado Miguel Maso, su mano derecha. Bern decide reglamentos, sanciones y quién recibe cada actualización del simulador. Nunca ocultó que le molesta ver a una mujer en lo más alto de su liga.',
+    '<span class="note">Sos Tara. La temporada tiene cinco carreras. Si terminás con una <b>posición media de 3,0 o mejor</b>, vas a poder enfrentarte a Bern.</span>'
+  ], cta:'Ir a la primera carrera'},
+  {src:'Prensa · Conferencia post-carrera', title:'Los representantes entran en escena', paras:[
+    'Viktor, el representante de Leandro, toma el micrófono antes que su piloto. Dice que Tara “corre con privilegios” y que la liga debería revisar sus reglajes.',
+    'Tu representante le contesta en redes y en una hora el cruce es tendencia. Desde el palco, Bern sonríe.'
+  ]},
+  {src:'Paddock · Box de Leandro', title:'Mensajes que no debía ver', paras:[
+    'Leandro usa la tablet de Viktor para revisar telemetría y encuentra otra cosa: mensajes con Bern. Reglajes filtrados, penalizaciones arregladas y una lista de pilotos a frenar. Tu nombre está primero.',
+    'Viktor no lo representa, lo usa. Y Bern le paga para eso.'
+  ]},
+  {src:'Radio del equipo', title:'Un aliado inesperado', paras:[
+    'Leandro aparece en tu box con la tablet en la mano. “Años chocándonos y el problema estaba en el palco.”',
+    'Rompe con Viktor y se suma a tu equipo para derrotar a Bern. El plan es llegar a la última carrera con resultados suficientes para desafiarlo frente a todos.'
+  ]},
+  {src:'Sala de control · Madrugada', title:'Bern se entera', paras:[
+    'Viktor le cuenta todo a Bern. Esa misma noche, alguien con credenciales de la organización entra al simulador de Leandro y le quita potencia de frenado.',
+    'Nadie en tu equipo lo sabe todavía.'
+  ]},
+];
+
+/* ---------- estado ---------- */
+let S;
+function reset(){ S={race:0, res:[], final:null, phase:'story'}; }
+function avg(){ return S.res.reduce((a,r)=>a+r.pos,0)/S.res.length; }
+
+function renderPips(){
+  let h='';
+  for(let i=0;i<5;i++){ const r=S.res[i];
+    h+=`<div class="pip ${r?'done':''} ${!r&&S.race===i&&S.phase!=='story0'?'now':''}" title="${RACES[i].name}">${r?'P'+r.pos:'R'+(i+1)}</div>`; }
+  const f=S.final; h+=`<div class="pip fin ${f?'done':''} ${S.phase==='final'?'now':''}" title="Final contra Bern">${f?(f.win?'P1':'P2'):'FIN'}</div>`;
+  $('#pips').innerHTML=h;
+}
+function show(html){ screenEl.innerHTML=html; renderPips(); window.scrollTo(0,0); const b=screenEl.querySelector('.btn'); if(b) b.focus({preventScroll:true}); }
+
+function storyScreen(b, next, extra=''){
+  stopGame();
+  show(`<section class="story"><div class="eyebrow">${b.src}</div><h1>${b.title}</h1>
+    ${b.paras.map(p=>p.startsWith('<span class="note">')?`<p class="note">${p.slice(19,-7)}</p>`:`<p>${p}</p>`).join('')}${extra}
+    <button class="btn" type="button" id="go">${b.cta||'Continuar'}</button></section>`);
+  $('#go').onclick=next;
+}
+
+function raceIntro(){
+  S.phase='intro'; const R=RACES[S.race];
+  show(`<section class="story"><div class="eyebrow">Carrera ${S.race+1} de 5 · ${R.tag}</div><h1>${R.name}</h1>
+    <div class="meta"><span>${R.track}</span>${S.res.length?`<span>Posición media: ${fmt1(avg())}</span>`:''}</div>
+    <div class="how">${R.how}</div>
+    <button class="btn" type="button" id="go">Largar</button></section>`);
+  $('#go').onclick=raceRun;
+}
+
+function raceRun(){
+  S.phase='race'; const R=RACES[S.race];
+  show(`<div class="hud"><span>CARRERA ${S.race+1}/5 · ${R.name.toUpperCase()}</span><span>${R.tag.toUpperCase()}</span></div><div class="stage" id="stage"></div>`);
+  document.activeElement && document.activeElement.blur();
+  R.game($('#stage'), res=>{ S.res.push({pos:R.pos(res.value), detail:res.detail}); raceResult(); });
+}
+
+function board(pos, raceIdx){
+  const dnf = raceIdx===4;
+  const others = shuffle(RIVALS);
+  const rows = Array(10).fill(null);
+  rows[pos-1]='Tara';
+  if(!dnf){
+    const opts=[pos-2,pos-1,pos+1,pos].map(x=>x).filter(x=>x>=0&&x<10&&rows[x]===null);
+    const near=[pos-2,pos].filter(x=>x>=0&&x<10&&rows[x]===null);
+    const spot = near.length ? near[Math.floor(Math.random()*near.length)] : opts[0];
+    rows[spot]='Leandro';
+  }
+  for(let i=0;i<10;i++) if(rows[i]===null) rows[i]=others.pop()||'—';
+  let h=rows.slice(0, dnf?9:10).map((n,i)=>`<li class="${n==='Tara'?'me':n==='Leandro'?'lea':''}"><b>P${i+1}</b><span>${n}</span></li>`).join('');
+  if(dnf) h+=`<li class="dnf"><b>ABD</b><span>Leandro · accidente vuelta 12</span></li>`;
+  return `<ol class="board">${h}</ol>`;
+}
+
+function raceResult(){
+  S.phase='result'; const i=S.race, r=S.res[i], a=avg(), ok=a<=3;
+  const cls = r.pos<=3?'':r.pos<=6?'mid':'low';
+  show(`<section><div class="eyebrow">Resultado · ${RACES[i].name}</div>
+    <div class="result"><div class="bigpos ${cls}">P${r.pos}</div><div><h2>${r.pos===1?'Victoria':r.pos<=3?'Podio':r.pos<=6?'En los puntos':'Carrera para olvidar'}</h2><div class="det">${r.detail}</div></div></div>
+    <div class="cols"><div>${board(r.pos,i)}</div>
+      <div class="avg"><div class="eyebrow">Posición media · ${S.res.length} de 5</div><div class="n ${ok?'ok':'no'}">${fmt1(a)}</div>
+      <p>${ok?'Vas en camino: con 3,0 o mejor al final de la temporada podés desafiar a Bern.':'Por encima de 3,0. Necesitás mejores resultados para llegar a la carrera contra Bern.'}</p></div></div>
+    <button class="btn" type="button" id="go">Continuar</button></section>`);
+  $('#go').onclick=()=>{
+    if(i<4){ S.race++; S.phase='story'; storyScreen(BEATS[i+1], raceIntro); }
+    else afterSeason();
+  };
+}
+
+function afterSeason(){
+  const a=avg(), ok=a<=3;
+  storyScreen({src:'Transmisión oficial · Vuelta 12', title:'Sin frenos', paras:[
+    'Curva 1 del Autódromo Ravenrock. El auto de Leandro llega a fondo y no reduce. Se ve el impacto contra las barreras y la señal se corta.',
+    'Los comisarios no informan nada. Nadie dice si está vivo.',
+    `<span class="note">Tu posición media en la temporada: <b>${fmt1(a)}</b>. ${ok?'Te alcanza para desafiar a Bern.':'No alcanza el 3,0 que hace falta para desafiar a Bern.'}</span>`
+  ], cta: ok?'Continuar':'Ver el final'}, ok ? challenge : ()=>ending('out'));
+}
+
+function challenge(){
+  storyScreen({src:'Paddock · Conferencia de prensa', title:'Tara desafía a Bern', paras:[
+    `Con una posición media de ${fmt1(avg())} tenés derecho a pedirlo, y lo pedís frente a todas las cámaras: una carrera, vos contra Bern Ravenrock.`,
+    'La polémica explota. Bern acepta enseguida. Cree que sus autos ya están preparados para ganar.'
+  ]}, ()=>storyScreen({src:'Oficina de la presidencia', title:'Miguel Maso cambia de lado', paras:[
+    'En medio del escándalo le llegan a Miguel las pruebas: los mensajes con Viktor, los reglajes manipulados y el registro de acceso al simulador de Leandro.',
+    'Miguel deja entrar a un grupo de periodistas a la sala técnica. Delante de ellos, los dos autos quedan con el mismo reglaje. Por primera vez, la carrera va a ser limpia.'
+  ], cta:'A la carrera final'}, finalIntro));
+}
+
+/* ---------- final ---------- */
+function finalIntro(){
+  S.phase='final';
+  show(`<section class="story"><div class="eyebrow">Carrera final · Autos en igualdad de condiciones</div><h1>Tara contra Bern Ravenrock</h1>
+    <div class="meta"><span>Autódromo Ravenrock · 3 sectores</span><span>Ganás la carrera si ganás 2 de 3 sectores</span></div>
+    <div class="how"><b>Sector 1 · Largada:</b> una sola largada, sin margen.<br><b>Sector 2 · Cambios:</b> cinco cambios en la recta principal.<br><b>Sector 3 · Tráfico:</b> 18 segundos entre rezagados. Bern no los toca: no puede permitirse un error.</div>
+    <button class="btn" type="button" id="go">Largar la final</button></section>`);
+  $('#go').onclick=()=>{ S.sectors=[]; runSector(0); };
+}
+const SECTORS=[
+  {name:'Sector 1 · Largada', game:(s,d)=>gStart(s,d,1), bern:()=>rnd(255,295), win:(t,b)=>t<b, f:v=>fmtS(v)+' s'},
+  {name:'Sector 2 · Cambios', game:(s,d)=>gShift(s,d,5), bern:()=>rnd(4.2,5.6), win:(t,b)=>t<b, f:v=>'±'+fmt1(v)},
+  {name:'Sector 3 · Tráfico', game:(s,d)=>gDodge(s,d,18), bern:()=>1+(Math.random()<0.5?1:0), win:(t,b)=>t<b, f:v=>v+' toque'+(v===1?'':'s')},
+];
+function runSector(k){
+  const sc=SECTORS[k];
+  show(`<div class="hud"><span>FINAL · TARA VS BERN</span><span>${sc.name.toUpperCase()}</span></div><div class="stage" id="stage"></div>`);
+  document.activeElement && document.activeElement.blur();
+  sc.game($('#stage'), res=>{ const b=sc.bern(); S.sectors.push({name:sc.name, t:res.value, b, win:sc.win(res.value,b), f:sc.f}); sectorCard(k); });
+}
+function sectorRows(){ return S.sectors.map(s=>`<div class="sector"><span>${s.name}</span><span>Tara ${s.f(s.t)} · Bern ${s.f(s.b)}</span><span class="w ${s.win?'t':'b'}">${s.win?'TARA':'BERN'}</span></div>`).join(''); }
+function sectorCard(k){
+  const won=S.sectors.filter(s=>s.win).length, lost=S.sectors.length-won;
+  const decided = won>=2 || lost>=2 || k===2;
+  show(`<section><div class="eyebrow">Final · tras ${S.sectors.length} de 3 sectores</div><h1>${won} – ${lost}</h1>
+    <div class="sectors">${sectorRows()}</div>
+    <button class="btn" type="button" id="go">${decided?'Bandera a cuadros':'Siguiente sector'}</button></section>`);
+  $('#go').onclick=()=>{ if(decided){ S.final={win:won>=2}; ending(won>=2?'win':'lose'); } else runSector(k+1); };
+}
+
+/* ---------- finales ---------- */
+const ENDINGS={
+  win:{src:'Final 1 de 3', title:'Tara gana', paras:[
+    'Cruzás la meta primera. Con los autos iguales, Bern no tuvo con qué responder.',
+    'Esa misma noche los periodistas publican todo: los mensajes, los reglajes, el acceso al simulador de Leandro. La junta suspende a Bern y a Viktor, y Miguel declara como testigo.',
+    'En el podio dejás un lugar vacío. Todavía no se sabe nada de Leandro.'
+  ]},
+  lose:{src:'Final 2 de 3', title:'Bern gana', paras:[
+    'Bern cruza primero y levanta los brazos frente a su propio palco. Con los autos iguales, esta vez no le hizo falta hacer trampa.',
+    'Los periodistas tienen las pruebas, pero la victoria de Bern se lleva los titulares y la junta posterga la investigación.',
+    'Te ganaste el derecho a correr contra él. Te faltó la carrera.'
+  ]},
+  out:{src:'Final 3 de 3', title:'Tara no corre', paras:[
+    'Sin una posición media de 3,0 no hay desafío. Sin resultados no hay tribuna, y sin tribuna nadie escucha lo que encontró Leandro.',
+    'Bern cierra la temporada entregando trofeos. El accidente de Leandro queda archivado como “falla técnica” y la tablet de Viktor desaparece.',
+    'Ravenrock sigue mandando. Por ahora.'
+  ]},
+};
+function ending(kind){
+  S.phase='end'; stopGame(); const e=ENDINGS[kind];
+  const rows=S.res.map((r,i)=>`<tr><td>${i+1}</td><td>${RACES[i].name}</td><td>P${r.pos}</td><td>${r.detail}</td></tr>`).join('');
+  show(`<section class="story"><div class="eyebrow">${e.src}</div><h1>${e.title}</h1>${e.paras.map(p=>`<p>${p}</p>`).join('')}
+    <h2 style="margin-top:26px">Tu temporada</h2>
+    <div class="tablewrap"><table class="sum"><thead><tr><th>#</th><th>Carrera</th><th>Pos.</th><th>Detalle</th></tr></thead><tbody>${rows}
+      <tr><td></td><td><b>Posición media</b></td><td><b>${fmt1(avg())}</b></td><td>${avg()<=3?'Clasificada para enfrentar a Bern':'Necesitabas 3,0 o mejor'}</td></tr></tbody></table></div>
+    ${S.sectors&&S.final?`<div class="sectors">${sectorRows()}</div>`:''}
+    <button class="btn" type="button" id="go">Jugar de nuevo</button></section>`);
+  $('#go').onclick=start;
+}
+
+function start(){ stopGame(); reset(); S.phase='story0'; storyScreen(BEATS[0], raceIntro); }
+start();
+</script>
+</body>
+</html>
