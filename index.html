@@ -262,23 +262,28 @@ function gAim(stage, done, total=24){
   function place(t){ t.el.style.width=t.el.style.height=(t.r*2)+'px'; t.el.style.left=(t.x-t.r)+'px'; t.el.style.top=(t.y-t.r)+'px'; }
   function spawn(){
     if(over || spawned>=total) return;
-    const p=spawned/total, r=Math.max(28, 44-p*14), W=arena.clientWidth, H=arena.clientHeight;
-    const t={r, rate:24+p*26, x:rnd(r+4,W-r-4), y:rnd(r+4,H-r-4), el:document.createElement('div')};
+    const p=spawned/total, r=Math.max(36, 52-p*16), W=arena.clientWidth, H=arena.clientHeight;
+    const t={r, rate:15+p*13, x:rnd(r+4,W-r-4), y:rnd(r+4,H-r-4), el:document.createElement('div')};
     t.el.className='tgt'; place(t);
     t.el.addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); if(!running) return;
       hits++; pop('+1',t.x,t.y,false); remove(t); hud(); });
     arena.appendChild(t.el); targets.push(t); spawned++;
-    if(spawned<total) T(spawn, Math.max(480, 950-p*480)*rnd(0.8,1.2));
+    if(spawned<total) T(spawn, Math.max(700, 1150-p*400)*rnd(0.85,1.15));
   }
   function remove(t){ t.el.remove(); targets=targets.filter(o=>o!==t); }
   function hud(){ aH.textContent=`Vértices ${hits}/${total}`; aM.textContent=`Fallos ${miss}`; }
-  arena.addEventListener('pointerdown', e=>{ if(!running) return; e.preventDefault(); miss++; const b=arena.getBoundingClientRect(); pop('fallo',e.clientX-b.left,e.clientY-b.top,true); hud(); });
+  // Margen de 14 px alrededor de cada vértice: un clic casi encima cuenta como acierto
+  arena.addEventListener('pointerdown', e=>{ if(!running) return; e.preventDefault();
+    const b=arena.getBoundingClientRect(), x=e.clientX-b.left, y=e.clientY-b.top;
+    const near=targets.find(t=>Math.hypot(t.x-x,t.y-y)<=t.r+14);
+    if(near){ hits++; pop('+1',near.x,near.y,false); remove(near); hud(); return; }
+    miss++; pop('fallo',x,y,true); hud(); });
   function loop(now){
     if(!last) last=now; const dt=Math.min(0.05,(now-last)/1000); last=now;
     if(running){
       for(const t of [...targets]){ t.r-=t.rate*dt; if(t.r<=4){ remove(t); arena.classList.add('flash'); T(()=>arena.classList.remove('flash'),150); } else place(t); }
       if(spawned>=total && !targets.length && !over){ over=true; running=false;
-        const v=hits-miss*0.5;
+        const v=hits-miss*0.25;
         T(()=>{ stopGame(); done({value:v, detail:`${hits} de ${total} vértices · ${miss} fallo${miss===1?'':'s'}`}); }, 700); }
     }
     raf=requestAnimationFrame(loop);
@@ -593,8 +598,8 @@ const RACES=[
    how:'Cinco luces rojas se encienden una a una. Cuando se <b>apagan</b>, acelerá con <kbd>ESPACIO</kbd> o el botón. Son tres largadas y cuenta el promedio. Si salís antes de tiempo, esa largada cuenta como 0,600 s.'},
   {name:'GP de Valdoria', track:'Valdoria Ring · 5,1 km · 15 vueltas', tag:'Cambios', game:gShift, pos:v=>posLow(v,[2.5,4,5.5,7,9,12,15,19,24]),
    how:'Las revoluciones suben en cada marcha. Cambiá con <kbd>ESPACIO</kbd> cuando la barra esté en la <b>franja verde</b>, lo más cerca posible de su línea central. Si llegás al limitador perdés tiempo. Son siete cambios.'},
-  {name:'GP de Altamira', track:'Altamira Hillclimb · 3,8 km · 20 vueltas', tag:'Puntería', game:gAim, pos:v=>posHigh(v,[22,20,18,16,14,12,10,8,5]),
-   how:'Práctica de puntería. Los vértices de cada curva aparecen en la pantalla y se van achicando: <b>tocalos o hacé clic</b> antes de que desaparezcan. Son 24, cada vez más chicos y más rápidos. Tocar el asfalto vacío cuenta como fallo y resta medio vértice.'},
+  {name:'GP de Altamira', track:'Altamira Hillclimb · 3,8 km · 20 vueltas', tag:'Puntería', game:gAim, pos:v=>posHigh(v,[21,19,17,15,13,11,9,7,4]),
+   how:'Práctica de puntería. Los vértices de cada curva aparecen en la pantalla y se van achicando: <b>tocalos o hacé clic</b> antes de que desaparezcan. Son 24, cada vez un poco más chicos y más rápidos. Tocar el asfalto lejos de un vértice cuenta como fallo y resta un cuarto de punto.'},
   {name:'GP Nocturno de Porto Sal', track:'Callejero Porto Sal · 4,9 km · 22 vueltas', tag:'Tráfico', game:gDodge, pos:v=>posLow(v,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5]),
    how:'Un toque en la vuelta 1 que manda a Tara al fondo. Hay que remontar entre los rezagados: cambiá de carril con <kbd>←</kbd> <kbd>→</kbd> o los botones durante 30 segundos. <b>Cada toque te cuesta una posición.</b>'},
   {name:'GP de Ravenrock', track:'Autódromo Ravenrock · 5,6 km · 25 vueltas', tag:'Boxes', game:gPit, pos:v=>posLow(v,[4200,5000,5800,6700,7700,8800,10000,12000,15000]),
