@@ -378,32 +378,32 @@ const RACES=[
   {name:'GP de Altamira', track:'Altamira Hillclimb · 3,8 km · 20 vueltas', tag:'Frenadas', game:gBrake, pos:v=>posHigh(v,[93,87,81,74,66,57,47,36,22]),
    how:'Llegás lanzada a cada curva. Frená con <kbd>ESPACIO</kbd> dentro de la <b>zona de frenado</b>, lo más cerca posible de la línea blanca. Antes perdés tiempo, después te vas de largo. Seis curvas, cada vez más cerradas.'},
   {name:'GP Nocturno de Porto Sal', track:'Callejero Porto Sal · 4,9 km · 22 vueltas', tag:'Tráfico', game:gDodge, pos:v=>posLow(v,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5]),
-   how:'Un toque en la vuelta 1 te manda al fondo. Remontá entre los rezagados: cambiá de carril con <kbd>←</kbd> <kbd>→</kbd> o los botones durante 30 segundos. <b>Cada toque te cuesta una posición.</b>'},
+   how:'Un toque en la vuelta 1 que manda a Tara al fondo. Hay que remontar entre los rezagados: cambiá de carril con <kbd>←</kbd> <kbd>→</kbd> o los botones durante 30 segundos. <b>Cada toque te cuesta una posición.</b>'},
   {name:'GP de Ravenrock', track:'Autódromo Ravenrock · 5,6 km · 25 vueltas', tag:'Boxes', game:gPit, pos:v=>posLow(v,[4200,5000,5800,6700,7700,8800,10000,12000,15000]),
-   how:'Leandro larga a tu lado, ahora como compañero de equipo. La carrera se define en boxes: repetí la secuencia de tu mecánico con las <b>flechas</b> lo más rápido que puedas. Cada error suma 0,8 s.'},
+   how:'Leandro larga al lado de Tara, ahora como compañero de equipo. La carrera se define en boxes: repetí la secuencia de tu mecánico con las <b>flechas</b> lo más rápido que puedas. Cada error suma 0,8 s.'},
 ];
 
 const BEATS=[
   {src:'Liga Ravenrock · Temporada 7', title:'Años de rivalidad', paras:[
-    'Desde que debutaron en la misma parrilla, Tara y Leandro se reparten victorias, toques y titulares. En la liga de carreras virtuales nadie vende más que ese duelo.',
-    'Por encima de todos está Bern Ravenrock, presidente de la organización, y a su lado Miguel Maso, su mano derecha. Bern decide reglamentos, sanciones y quién recibe cada actualización del simulador. Nunca ocultó que le molesta ver a una mujer en lo más alto de su liga.',
-    '<span class="note">Sos Tara. La temporada tiene cinco carreras. Si terminás con una <b>posición media de 3,0 o mejor</b>, vas a poder enfrentarte a Bern.</span>'
+    'En el mundo de la Formula 1 Virtual nada vende más que el duelo entre Tara y Leandro. Desde que debutaron en la misma parrilla, ambos se reparten victorias, toques y titulares.',
+    'Por encima de todos está Bern Ravenrock, presidente de la organización. Bern decide reglamentos, sanciones y quién recibe cada actualización del simulador. Nunca ocultó que le molesta ver a una mujer en lo más alto de su liga y con ayuda de, Miguel Maso, su mano derecha, hará todo lo posible para que Tara quede fuera de juego.',
+    '<span class="note">Ayuda a Tara. La temporada tiene cinco carreras. Si terminás con una <b>posición media de 3,0 o mejor</b>, Tara podrá finalmente enfrentar a Bern.</span>'
   ], cta:'Ir a la primera carrera'},
   {src:'Prensa · Conferencia post-carrera', title:'Los representantes entran en escena', paras:[
-    'Viktor, el representante de Leandro, toma el micrófono antes que su piloto. Dice que Tara “corre con privilegios” y que la liga debería revisar sus reglajes.',
-    'Tu representante le contesta en redes y en una hora el cruce es tendencia. Desde el palco, Bern sonríe.'
+    'Viktor, el representante de Leandro, toma el micrófono antes que su piloto. Dice que Tara “tiene mejoras ilegales en su monoplaza” y que la liga debería revisar sus reglajes.',
+    'El representante de Tara le contesta en redes y en una hora el cruce es tendencia. Desde el palco, Bern sonríe.'
   ]},
   {src:'Paddock · Box de Leandro', title:'Mensajes que no debía ver', paras:[
-    'Leandro usa la tablet de Viktor para revisar telemetría y encuentra otra cosa: mensajes con Bern. Reglajes filtrados, penalizaciones arregladas y una lista de pilotos a frenar. Tu nombre está primero.',
-    'Viktor no lo representa, lo usa. Y Bern le paga para eso.'
+    'Leandro usa la tablet de Viktor para revisar telemetrías y encuentra otra cosa: mensajes con Bern. Reglajes filtrados, penalizaciones arregladas y una lista de pilotos a frenar. El nombre de Tara está primero.',
+    'Viktor no lo representa, lo usa en beneficio de Bern. Y Bern le paga para eso.'
   ]},
   {src:'Radio del equipo', title:'Un aliado inesperado', paras:[
-    'Leandro aparece en tu box con la tablet en la mano. “Años chocándonos y el problema estaba en el palco.”',
-    'Rompe con Viktor y se suma a tu equipo para derrotar a Bern. El plan es llegar a la última carrera con resultados suficientes para desafiarlo frente a todos.'
+    'Leandro aparece en el box de Tara con la tablet en la mano: “Años chocándonos y el problema estaba en el palco.”',
+    'Despide a Viktor y se suma al equipo de su rival para derrotar a Bern. El plan es llegar a la última carrera con resultados suficientes para desafiarlo frente a todos y exponer sus artimañas.'
   ]},
   {src:'Sala de control · Madrugada', title:'Bern se entera', paras:[
-    'Viktor le cuenta todo a Bern. Esa misma noche, alguien con credenciales de la organización entra al simulador de Leandro y le quita potencia de frenado.',
-    'Nadie en tu equipo lo sabe todavía.'
+    'Viktor le cuenta de la decisión de Leandro a Bern. Esa misma noche, alguien con credenciales de la organización entra al simulador de Leandro y le quita potencia de frenado.',
+    'Nadie en el equipo de Tara lo sabe todavía.'
   ]},
 ];
 
@@ -488,7 +488,7 @@ function afterSeason(){
 
 function challenge(){
   storyScreen({src:'Paddock · Conferencia de prensa', title:'Tara desafía a Bern', paras:[
-    `Con una posición media de ${fmt1(avg())} tenés derecho a pedirlo, y lo pedís frente a todas las cámaras: una carrera, vos contra Bern Ravenrock.`,
+    `Con una posición media de ${fmt1(avg())} Tara pide en frente a todas las cámaras: una carrera contra Bern Ravenrock.`,
     'La polémica explota. Bern acepta enseguida. Cree que sus autos ya están preparados para ganar.'
   ]}, ()=>storyScreen({src:'Oficina de la presidencia', title:'Miguel Maso cambia de lado', paras:[
     'En medio del escándalo le llegan a Miguel las pruebas: los mensajes con Viktor, los reglajes manipulados y el registro de acceso al simulador de Leandro.',
@@ -501,6 +501,7 @@ function finalIntro(){
   S.phase='final';
   show(`<section class="story"><div class="eyebrow">Carrera final · Autos en igualdad de condiciones</div><h1>Tara contra Bern Ravenrock</h1>
     <div class="meta"><span>Autódromo Ravenrock · 3 sectores</span><span>Ganás la carrera si ganás 2 de 3 sectores</span></div>
+    <p>El Autódromo Ravenrock cuenta con tres sectores: la largada, los cambios en la recta principal y el tráfico de rezagados. Gana la carrera quien se lleve dos de los tres sectores.</p>
     <div class="how"><b>Sector 1 · Largada:</b> una sola largada, sin margen.<br><b>Sector 2 · Cambios:</b> cinco cambios en la recta principal.<br><b>Sector 3 · Tráfico:</b> 18 segundos entre rezagados. Bern no los toca: no puede permitirse un error.</div>
     <button class="btn" type="button" id="go">Largar la final</button></section>`);
   $('#go').onclick=()=>{ S.sectors=[]; runSector(0); };
@@ -529,14 +530,13 @@ function sectorCard(k){
 /* ---------- finales ---------- */
 const ENDINGS={
   win:{src:'Final 1 de 3', title:'Tara gana', paras:[
-    'Cruzás la meta primera. Con los autos iguales, Bern no tuvo con qué responder.',
+    'Tara cruza la meta primero. Con los autos iguales, Bern no tuvo con qué responder.',
     'Esa misma noche los periodistas publican todo: los mensajes, los reglajes, el acceso al simulador de Leandro. La junta suspende a Bern y a Viktor, y Miguel declara como testigo.',
-    'En el podio dejás un lugar vacío. Todavía no se sabe nada de Leandro.'
+    'En el podio hay un lugar vacío. Todavía no se sabe nada de Leandro.'
   ]},
   lose:{src:'Final 2 de 3', title:'Bern gana', paras:[
     'Bern cruza primero y levanta los brazos frente a su propio palco. Con los autos iguales, esta vez no le hizo falta hacer trampa.',
-    'Los periodistas tienen las pruebas, pero la victoria de Bern se lleva los titulares y la junta posterga la investigación.',
-    'Te ganaste el derecho a correr contra él. Te faltó la carrera.'
+    'Los periodistas tienen las pruebas, pero la victoria de Bern se lleva los titulares y la junta posterga la investigación.'
   ]},
   out:{src:'Final 3 de 3', title:'Tara no corre', paras:[
     'Sin una posición media de 3,0 no hay desafío. Sin resultados no hay tribuna, y sin tribuna nadie escucha lo que encontró Leandro.',
