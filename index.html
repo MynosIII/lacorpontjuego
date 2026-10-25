@@ -125,6 +125,30 @@ canvas{display:block;border-radius:6px;max-width:100%}
 .sector .w{font-weight:700}.sector .w.t{color:var(--good)}.sector .w.b{color:var(--bad)}
 .tablewrap{overflow-x:auto}
 #cv{touch-action:none}
+/* demos */
+.howwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:16px;align-items:start}
+.howwrap.single{grid-template-columns:minmax(0,340px);margin-top:14px}
+@media (max-width:640px){.howwrap{grid-template-columns:1fr}}
+.demo{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;min-width:0}
+.demo-tag{align-self:flex-start;font-family:var(--f-mono);font-size:.66rem;letter-spacing:.14em;color:var(--teal)}
+.demo-screen{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:120px;pointer-events:none}
+.demo-screen .pod i{width:22px}
+.demo-screen .lights{gap:6px;padding:8px}
+.demo-screen .gear{font-size:2rem}
+.demo-screen .rpmwrap{height:28px}
+.demo-screen .readout{font-size:1rem}
+.demo-screen .seq span{width:32px;height:32px;font-size:1.05rem}
+.arena.demo-arena{height:160px;cursor:default}
+.demo-cv{width:100%;max-width:260px;height:auto;border-radius:5px}
+.cursor{position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-2px 0 0 -2px;border-left:3px solid #fff;border-top:3px solid #fff;transform:rotate(-8deg);transition:left .45s ease,top .45s ease;z-index:2}
+.cursor::after{content:"";position:absolute;left:2px;top:2px;width:22px;height:3px;background:#fff;transform-origin:0 0;transform:rotate(45deg)}
+.cursor.press{filter:drop-shadow(0 0 6px var(--amber))}
+.demo-keys{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.dk{font-family:var(--f-mono);font-weight:700;font-size:.78rem;padding:5px 9px;border:1px solid var(--line);border-bottom-width:3px;border-radius:5px;color:var(--muted);background:#0f1318;transition:background .08s,color .08s,transform .08s}
+.dk.on{background:var(--amber);color:#1a1300;border-color:var(--amber);transform:translateY(2px)}
+.demo figcaption{font-size:.78rem;color:var(--muted);text-align:center}
+.diffnote{margin-top:8px!important;color:var(--ink)!important}
+.diffnote b{color:var(--teal)}
 /* puntería */
 .arena{position:relative;width:100%;max-width:560px;height:min(58vh,380px);background:radial-gradient(circle at 50% 120%,#232b36,#12161d 70%);border:1px solid var(--line);border-radius:6px;overflow:hidden;touch-action:none;cursor:crosshair;transition:background-color .15s}
 .arena.flash{box-shadow:inset 0 0 0 3px var(--bad)}
@@ -212,14 +236,14 @@ function gStart(stage, done, tries=3){
 /* ---------- minijuego 2: cambios ---------- */
 function gShift(stage, done, shifts=7){
   stage.innerHTML = `<div class="tacho"><div class="gearlbl">MARCHA</div><div class="gear" id="gear">1</div>
-    <div class="rpmwrap"><div class="rpmzone"></div><div class="rpmfill" id="fill"></div></div>
+    <div class="rpmwrap"><div class="rpmzone" style="left:${D().shiftZone[0]}%;width:${D().shiftZone[1]-D().shiftZone[0]}%"></div><div class="rpmfill" id="fill"></div></div>
     <div class="rpmticks"><span>3</span><span>5</span><span>7</span><span>9</span><span>11</span><span>13 ×1000 rpm</span></div></div>
     <div class="readout" id="gm">Cambiá en la franja verde</div><div class="trylog" id="tl"></div>
     <button class="pad" type="button">CAMBIAR</button><div class="hint"><kbd>ESPACIO</kbd> o tocá el botón</div>`;
   const fill=stage.querySelector('#fill'), gearEl=stage.querySelector('#gear'), gm=stage.querySelector('#gm'), tl=stage.querySelector('#tl');
-  const IDEAL=88, LO=82, HI=94;
+  const IDEAL=88, LO=D().shiftZone[0], HI=D().shiftZone[1];
   let gear=1, rpm=30, errs=[], start=0, raf=0, paused=true, hold=0;
-  const dur=()=>1450-gear*85;
+  const dur=()=>1450-gear*85+D().shiftSlow;
   function loop(now){
     if(!paused){
       const t=(now-start)/dur();
@@ -262,13 +286,13 @@ function gAim(stage, done, total=24){
   function place(t){ t.el.style.width=t.el.style.height=(t.r*2)+'px'; t.el.style.left=(t.x-t.r)+'px'; t.el.style.top=(t.y-t.r)+'px'; }
   function spawn(){
     if(over || spawned>=total) return;
-    const p=spawned/total, r=Math.max(36, 52-p*16), W=arena.clientWidth, H=arena.clientHeight;
-    const t={r, rate:15+p*13, x:rnd(r+4,W-r-4), y:rnd(r+4,H-r-4), el:document.createElement('div')};
+    const p=spawned/total, dd=D(), r=Math.max(36, 52-p*16)*dd.aimSize, W=arena.clientWidth, H=arena.clientHeight;
+    const t={r, rate:(15+p*13)*dd.aimSpeed, x:rnd(r+4,W-r-4), y:rnd(r+4,H-r-4), el:document.createElement('div')};
     t.el.className='tgt'; place(t);
     t.el.addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); if(!running) return;
       hits++; pop('+1',t.x,t.y,false); remove(t); hud(); });
     arena.appendChild(t.el); targets.push(t); spawned++;
-    if(spawned<total) T(spawn, Math.max(700, 1150-p*400)*rnd(0.85,1.15));
+    if(spawned<total) T(spawn, Math.max(700, 1150-p*400)*dd.aimGap*rnd(0.85,1.15));
   }
   function remove(t){ t.el.remove(); targets=targets.filter(o=>o!==t); }
   function hud(){ aH.textContent=`Vértices ${hits}/${total}`; aM.textContent=`Fallos ${miss}`; }
@@ -318,16 +342,16 @@ function gDodge(stage, done, secs=30){
     const free=[0,1,2].filter(l=>!cars.some(c=>c.lane===l && c.y<CH*1.8));
     if(!free.length) return;
     const pick=shuffle(free);
-    const count = (Math.random() < 0.25+p*0.35 && pick.length>1) ? 2 : 1;
+    const count = (Math.random() < (0.25+p*0.35)*D().dodgeDouble && pick.length>1) ? 2 : 1;
     for(let k=0;k<count;k++) cars.push({lane:pick[k], y:-CH-k*rnd(0,30), color:cols[Math.floor(Math.random()*cols.length)]});
   }
   function frame(now){
     if(!last) last=now; const dt=Math.min(0.05,(now-last)/1000); last=now;
     if(started && !over){
       el+=dt; const p=Math.min(1, el/secs);
-      const speed=280+p*240;
+      const speed=(280+p*240)*D().dodgeSpeed;
       off=(off+speed*dt)%60;
-      spawnT-=dt; if(spawnT<=0){ spawn(p); spawnT = 0.85 - p*0.38; }
+      spawnT-=dt; if(spawnT<=0){ spawn(p); spawnT = (0.85 - p*0.38)*D().dodgeGap; }
       cars.forEach(c=>c.y+=speed*dt);
       px += (laneX(lane)-px)*Math.min(1, dt*16);
       inv=Math.max(0,inv-dt);
@@ -564,7 +588,7 @@ function gEnduro(stage, done, secs=60){
 }
 
 /* ---------- minijuego 5: boxes ---------- */
-function gPit(stage, done, n=12){
+function gPit(stage, done, n=D().pitN){
   const glyph={L:'←',R:'→',U:'↑',D:'↓'};
   const seq=Array.from({length:n},()=>'LRUD'[Math.floor(Math.random()*4)]);
   stage.innerHTML = `<div class="count" id="cd">3</div><div class="seq" id="sq">${seq.map(d=>`<span>${glyph[d]}</span>`).join('')}</div>
@@ -590,6 +614,129 @@ function gPit(stage, done, n=12){
   cur={arrow}; cleanup=()=>{ cancelAnimationFrame(raf); timers.forEach(clearTimeout); };
   raf=requestAnimationFrame(tick);
 }
+
+/* ---------- demos animadas de cada minijuego ---------- */
+let demoStop=null;
+function stopDemo(){ if(demoStop){ demoStop(); demoStop=null; } }
+const DEMO_INFO={
+  start:{keys:[['sp','ESPACIO'],['tap','👆 ACELERAR']], cap:'PC: tecla ESPACIO · Celular: tocá el botón ACELERAR'},
+  shift:{keys:[['sp','ESPACIO'],['tap','👆 CAMBIAR']], cap:'PC: tecla ESPACIO · Celular: tocá el botón CAMBIAR'},
+  aim:{keys:[['click','🖱 CLIC'],['tap','👆 TOCAR']], cap:'PC: clic con el mouse sobre el vértice · Celular: tocalo con el dedo'},
+  dodge:{keys:[['L','←'],['R','→'],['swipe','👆 DESLIZAR']], cap:'PC: flechas ← → · Celular: deslizá el dedo sobre la pista o usá los botones'},
+  pit:{keys:[['U','↑'],['L','←'],['D','↓'],['R','→']], cap:'PC: flechas o W A S D · Celular: botones de flechas'},
+  enduro:{keys:[['L','←'],['U','↑ ACEL.'],['D','↓ FRENO'],['R','→']], cap:'PC: ← → doblar, ↑ acelerar, ↓ frenar · Celular: arrastrá el dedo sobre la pista y usá ACEL./FRENO'},
+};
+function demoBlock(kind){
+  const info=DEMO_INFO[kind];
+  return `<figure class="demo" aria-label="Demostración de cómo se juega"><div class="demo-tag">CÓMO SE JUEGA</div>
+    <div class="demo-screen" id="dscr"></div>
+    <div class="demo-keys">${info.keys.map(([k,l])=>`<span class="dk" data-k="${k}">${l}</span>`).join('')}</div>
+    <figcaption>${info.cap}</figcaption></figure>`;
+}
+function mountDemo(kind){
+  stopDemo();
+  const scr=$('#dscr'); if(!scr) return;
+  const box=scr.closest('.demo');
+  let alive=true, raf=0; const timers=[];
+  const T=(f,ms)=>timers.push(setTimeout(()=>{ if(alive) f(); },ms));
+  const R=f=>{ const step=now=>{ if(!alive) return; f(now); raf=requestAnimationFrame(step); }; raf=requestAnimationFrame(step); };
+  const key=(k,ms=260)=>{ const el=box.querySelector(`.dk[data-k="${k}"]`); if(!el) return; el.classList.add('on'); T(()=>el.classList.remove('on'),ms); };
+  demoStop=()=>{ alive=false; timers.forEach(clearTimeout); cancelAnimationFrame(raf); };
+  DEMOS[kind](scr,T,R,key);
+}
+function demoCanvas(scr,w,h){
+  const c=document.createElement('canvas'), dpr=window.devicePixelRatio||1;
+  c.width=w*dpr; c.height=h*dpr; c.className='demo-cv'; c.style.aspectRatio=w+'/'+h; scr.appendChild(c);
+  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr); return ctx;
+}
+const DEMOS={
+  start(scr,T,R,key){
+    scr.innerHTML=`<div class="lights">${'<div class="pod"><i></i><i></i></div>'.repeat(5)}</div><div class="readout" id="drd">Esperá…</div>`;
+    const pods=[...scr.querySelectorAll('.pod')], rd=scr.querySelector('#drd');
+    (function cycle(){
+      pods.forEach(p=>p.classList.remove('on')); rd.textContent='Esperá a que se apaguen…'; rd.className='readout';
+      pods.forEach((p,i)=>T(()=>p.classList.add('on'),400+i*450));
+      T(()=>{ pods.forEach(p=>p.classList.remove('on')); rd.textContent='¡YA!'; rd.className='readout good'; },2900);
+      T(()=>{ key('sp'); key('tap'); rd.textContent='0,231 s'; },3130);
+      T(cycle,4700);
+    })();
+  },
+  shift(scr,T,R,key){
+    scr.innerHTML=`<div class="tacho"><div class="gear" id="dg">1</div><div class="rpmwrap"><div class="rpmzone"></div><div class="rpmfill" id="df"></div></div></div><div class="readout" id="drd">Cambiá en la franja verde</div>`;
+    const f=scr.querySelector('#df'), g=scr.querySelector('#dg'), rd=scr.querySelector('#drd');
+    let gear=1, t0=performance.now(), wait=0;
+    R(now=>{
+      if(now<wait) return;
+      const t=(now-t0)/1200, rpm=30+70*Math.min(1,0.6*t+0.4*t*t);
+      f.style.width=rpm+'%';
+      if(rpm>=88){ key('sp'); key('tap'); rd.textContent='¡Perfecto!'; rd.className='readout good';
+        gear = gear>=5 ? 1 : gear+1; g.textContent=gear; wait=now+420; t0=wait; f.style.width='30%'; }
+    });
+  },
+  aim(scr,T,R,key){
+    scr.innerHTML=`<div class="arena demo-arena"><div class="cursor" id="dcur"></div></div>`;
+    const ar=scr.querySelector('.arena'), cur=scr.querySelector('#dcur');
+    (function next(){
+      const W=ar.clientWidth||300, H=ar.clientHeight||160, r=26, x=rnd(r+6,W-r-6), y=rnd(r+6,H-r-6);
+      const t=document.createElement('div'); t.className='tgt'; t.style.cssText=`width:${2*r}px;height:${2*r}px;left:${x-r}px;top:${y-r}px`; ar.appendChild(t);
+      T(()=>{ cur.style.left=x+'px'; cur.style.top=y+'px'; },250);
+      T(()=>{ key('click'); key('tap'); cur.classList.add('press'); t.remove();
+        const p=document.createElement('div'); p.className='pop'; p.textContent='+1'; p.style.left=x+'px'; p.style.top=y+'px'; ar.appendChild(p); T(()=>p.remove(),600); },800);
+      T(()=>cur.classList.remove('press'),950);
+      T(next,1150);
+    })();
+  },
+  dodge(scr,T,R,key){
+    const W=240, H=170, ctx=demoCanvas(scr,W,H), LW=W/3, CW=28, CH=44, PY=H-CH-8;
+    let lane=1, px=LW*1.5, cars=[], off=0, last=0, spawnT=0;
+    const lx=l=>LW*l+LW/2;
+    function car(cx,y,col){ ctx.fillStyle=col; ctx.beginPath(); ctx.roundRect(cx-CW/2,y,CW,CH,6); ctx.fill(); }
+    R(now=>{
+      const dt=last?Math.min(0.05,(now-last)/1000):0; last=now;
+      off=(off+180*dt)%40; spawnT-=dt;
+      if(spawnT<=0){ const l=Math.floor(Math.random()*3); cars.push({l,y:-CH}); spawnT=0.9; }
+      cars.forEach(c=>c.y+=180*dt); cars=cars.filter(c=>c.y<H);
+      const threat=cars.find(c=>c.l===lane && c.y>PY-110 && c.y<PY);
+      if(threat){ const opts=[lane-1,lane+1].filter(l=>l>=0&&l<3&&!cars.some(c=>c.l===l&&c.y>PY-90&&c.y<PY+CH));
+        if(opts.length){ const n=opts[0]; key(n<lane?'L':'R'); key('swipe'); lane=n; } }
+      px+=(lx(lane)-px)*Math.min(1,dt*14);
+      ctx.fillStyle='#161b22'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#2b3441'; for(let l=1;l<3;l++) for(let y=-40+off;y<H;y+=40) ctx.fillRect(LW*l-1,y,2,20);
+      cars.forEach(c=>car(lx(c.l),c.y,'#5b6676'));
+      car(px,PY,'#ffb81c');
+    });
+  },
+  pit(scr,T,R,key){
+    const G={L:'←',R:'→',U:'↑',D:'↓'}, seq=['U','L','D','R','R','L'];
+    scr.innerHTML=`<div class="seq">${seq.map(d=>`<span>${G[d]}</span>`).join('')}</div><div class="readout" id="drd">0,000 s</div>`;
+    const cells=[...scr.querySelectorAll('.seq span')], rd=scr.querySelector('#drd');
+    (function cycle(){
+      cells.forEach(c=>c.className=''); cells[0].classList.add('cur'); rd.textContent='0,000 s';
+      seq.forEach((d,i)=>T(()=>{ key(d); cells[i].classList.remove('cur'); cells[i].classList.add('ok'); if(cells[i+1]) cells[i+1].classList.add('cur');
+        rd.textContent=fmtS((i+1)*420)+' s'; },600+i*420));
+      T(cycle,600+seq.length*420+1300);
+    })();
+  },
+  enduro(scr,T,R,key){
+    const W=240, H=200, ctx=demoCanvas(scr,W,H), TOP=60, TW=24, BW=210;
+    let off=0, last=0, pl=0, target=0, cars=[{lane:-0.5,z:0.1},{lane:0.5,z:0.55}], steerT=0;
+    const hw=y=>(TW+(BW-TW)*((y-TOP)/(H-TOP)))/2;
+    R(now=>{
+      const dt=last?Math.min(0.05,(now-last)/1000):0; last=now;
+      off=(off+dt*1.2)%1; key('U',120);
+      cars.forEach(c=>{ c.z+=dt*0.32; if(c.z>1.1){ c.z=0.02; c.lane=[-0.55,0,0.55][Math.floor(Math.random()*3)]; } });
+      const near=cars.find(c=>c.z>0.55 && c.z<0.95 && Math.abs(c.lane-pl)<0.4);
+      if(near && now>steerT){ target = near.lane>=0 ? -0.55 : 0.55; steerT=now+500; }
+      const d=target-pl; if(Math.abs(d)>0.02){ key(d<0?'L':'R',120); pl+=Math.sign(d)*Math.min(Math.abs(d),dt*1.6); }
+      ctx.fillStyle='#141c2c'; ctx.fillRect(0,0,W,TOP); ctx.fillStyle='#1d2a24'; ctx.fillRect(0,TOP,W,H-TOP);
+      ctx.fillStyle='#3a3f48'; ctx.beginPath(); ctx.moveTo(W/2-TW/2,TOP); ctx.lineTo(W/2+TW/2,TOP); ctx.lineTo(W/2+BW/2,H); ctx.lineTo(W/2-BW/2,H); ctx.fill();
+      for(let i=0;i<8;i++){ const t=((i/8)+off)%1, y=TOP+t*t*(H-TOP); ctx.fillStyle='rgba(255,255,255,.45)'; ctx.fillRect(W/2-1,y,2,3+t*8); }
+      [...cars].sort((a,b)=>a.z-b.z).forEach(c=>{ const y=TOP+c.z*c.z*(H-TOP), w=4+c.z*c.z*26, x=W/2+c.lane*hw(y);
+        ctx.fillStyle='#ff3355'; ctx.fillRect(x-w/2,y-w*1.3,w,w*1.3); });
+      const py=H-34, x=W/2+pl*hw(py); ctx.fillStyle='#ffb81c'; ctx.beginPath(); ctx.roundRect(x-15,py,30,30,5); ctx.fill();
+    });
+  },
+};
 
 /* ---------- datos ---------- */
 const RIVALS=['Kaito Mura','Sofía Lenz','Dario Vence','Inés Halvo','Marco Petri','Yuri Domsk','Noa Reyes','Félix Andrade'];
@@ -632,7 +779,16 @@ const BEATS=[
 
 /* ---------- estado ---------- */
 let S;
-function reset(){ S={race:0, res:[], final:null, phase:'story'}; }
+function reset(){ S={race:0, res:[], final:null, phase:'story', diff:0}; }
+
+/* Dificultad adaptativa: la carrera 1 la fija para el resto del juego.
+   P1–P3 → 0 (la dificultad de siempre), P4–P6 → 1 (un poco más fácil), P7 o peor → 2 (bastante más fácil). */
+const DIFF=[
+  {name:'Normal',      shiftZone:[82,94], shiftSlow:0,   aimSize:1,    aimSpeed:1,    aimGap:1,    dodgeSpeed:1,    dodgeGap:1,    dodgeDouble:1,   pitN:12, bernStart:0,  bernShift:0,   bernEnduro:0},
+  {name:'Intermedia',  shiftZone:[80,96], shiftSlow:170, aimSize:1.12, aimSpeed:0.82, aimGap:1.15, dodgeSpeed:0.86, dodgeGap:1.15, dodgeDouble:0.65, pitN:10, bernStart:20, bernShift:1,   bernEnduro:-1},
+  {name:'Accesible',   shiftZone:[78,98], shiftSlow:340, aimSize:1.25, aimSpeed:0.66, aimGap:1.3,  dodgeSpeed:0.72, dodgeGap:1.3,  dodgeDouble:0.35, pitN:8,  bernStart:40, bernShift:2,   bernEnduro:-2},
+];
+const D=()=>DIFF[(S&&S.diff)||0];
 function avg(){ return S.res.reduce((a,r)=>a+r.pos,0)/S.res.length; }
 
 function renderPips(){
@@ -642,7 +798,7 @@ function renderPips(){
   const f=S.final; h+=`<div class="pip fin ${f?'done':''} ${S.phase==='final'?'now':''}" title="Final contra Bern">${f?(f.win?'P1':'P2'):'FIN'}</div>`;
   $('#pips').innerHTML=h;
 }
-function show(html){ screenEl.innerHTML=html; renderPips(); window.scrollTo(0,0); const b=screenEl.querySelector('.btn'); if(b) b.focus({preventScroll:true}); }
+function show(html){ stopDemo(); screenEl.innerHTML=html; renderPips(); window.scrollTo(0,0); const b=screenEl.querySelector('.btn'); if(b) b.focus({preventScroll:true}); }
 
 function storyScreen(b, next, extra=''){
   stopGame();
@@ -652,12 +808,14 @@ function storyScreen(b, next, extra=''){
   $('#go').onclick=next;
 }
 
+const DEMO_KIND=['start','shift','aim','dodge','pit'];
 function raceIntro(){
   S.phase='intro'; const R=RACES[S.race];
   show(`<section class="story"><div class="eyebrow">Carrera ${S.race+1} de 5 · ${R.tag}</div><h1>${R.name}</h1>
     <div class="meta"><span>${R.track}</span>${S.res.length?`<span>Posición media: ${fmt1(avg())}</span>`:''}</div>
-    <div class="how">${R.how}</div>
+    <div class="howwrap"><div class="how">${R.how}</div>${demoBlock(DEMO_KIND[S.race])}</div>
     <button class="btn" type="button" id="go">Largar</button></section>`);
+  mountDemo(DEMO_KIND[S.race]);
   $('#go').onclick=raceRun;
 }
 
@@ -665,7 +823,9 @@ function raceRun(){
   S.phase='race'; const R=RACES[S.race];
   show(`<div class="hud"><span>CARRERA ${S.race+1}/5 · ${R.name.toUpperCase()}</span><span>${R.tag.toUpperCase()}</span></div><div class="stage" id="stage"></div>`);
   document.activeElement && document.activeElement.blur();
-  R.game($('#stage'), res=>{ S.res.push({pos:R.pos(res.value), detail:res.detail}); raceResult(); });
+  R.game($('#stage'), res=>{ const pos=R.pos(res.value); S.res.push({pos, detail:res.detail});
+    if(S.race===0) S.diff = pos<=3 ? 0 : pos<=6 ? 1 : 2;
+    raceResult(); });
 }
 
 function board(pos, raceIdx){
@@ -692,7 +852,8 @@ function raceResult(){
     <div class="result"><div class="bigpos ${cls}">P${r.pos}</div><div><h2>${r.pos===1?'Victoria':r.pos<=3?'Podio':r.pos<=6?'En los puntos':'Carrera para olvidar'}</h2><div class="det">${r.detail}</div></div></div>
     <div class="cols"><div>${board(r.pos,i)}</div>
       <div class="avg"><div class="eyebrow">Posición media · ${S.res.length} de 5</div><div class="n ${ok?'ok':'no'}">${fmt1(a)}</div>
-      <p>${ok?'Vas en camino: con 3,0 o mejor al final de la temporada podés desafiar a Bern.':'Por encima de 3,0. Necesitás mejores resultados para llegar a la carrera contra Bern.'}</p></div></div>
+      <p>${ok?'Vas en camino: con 3,0 o mejor al final de la temporada podés desafiar a Bern.':'Por encima de 3,0. Necesitás mejores resultados para llegar a la carrera contra Bern.'}</p>
+      ${i===0?`<p class="diffnote">Dificultad para el resto de la temporada: <b>${D().name}</b></p>`:''}</div></div>
     <button class="btn" type="button" id="go">Continuar</button></section>`);
   $('#go').onclick=()=>{
     if(i<4){ S.race++; S.phase='story'; storyScreen(BEATS[i+1], raceIntro); }
@@ -726,13 +887,15 @@ function finalIntro(){
     <div class="meta"><span>Autódromo Ravenrock · 3 sectores</span><span>Ganás la carrera si ganás 2 de 3 sectores</span></div>
     <p>El Autódromo Ravenrock cuenta con tres sectores: la largada, los cambios en la recta principal y el enduro final entre rezagados. Gana la carrera quien se lleve dos de los tres sectores.</p>
     <div class="how"><b>Sector 1 · Largada:</b> una sola largada, sin margen.<br><b>Sector 2 · Cambios:</b> cinco cambios en la recta principal.<br><b>Sector 3 · Enduro:</b> 60 segundos de ruta con curvas. Pasá más autos que Bern sin chocar tres veces. <kbd>←</kbd> <kbd>→</kbd> para doblar, <kbd>↑</kbd> acelerar, <kbd>↓</kbd> frenar; en el celular arrastrá el dedo sobre la pista.</div>
+    <div class="howwrap single">${demoBlock('enduro')}</div>
     <button class="btn" type="button" id="go">Largar la final</button></section>`);
+  mountDemo('enduro');
   $('#go').onclick=()=>{ S.sectors=[]; runSector(0); };
 }
 const SECTORS=[
-  {name:'Sector 1 · Largada', game:(s,d)=>gStart(s,d,1), bern:()=>rnd(255,295), win:(t,b)=>t<b, f:v=>fmtS(v)+' s'},
-  {name:'Sector 2 · Cambios', game:(s,d)=>gShift(s,d,5), bern:()=>rnd(4.2,5.6), win:(t,b)=>t<b, f:v=>'±'+fmt1(v)},
-  {name:'Sector 3 · Enduro', game:(s,d)=>gEnduro(s,d,60), bern:()=>6+Math.floor(Math.random()*3), win:(t,b)=>t>=b, f:v=>v+' auto'+(v===1?'':'s')},
+  {name:'Sector 1 · Largada', game:(s,d)=>gStart(s,d,1), bern:()=>rnd(255,295)+D().bernStart, win:(t,b)=>t<b, f:v=>fmtS(v)+' s'},
+  {name:'Sector 2 · Cambios', game:(s,d)=>gShift(s,d,5), bern:()=>rnd(4.2,5.6)+D().bernShift, win:(t,b)=>t<b, f:v=>'±'+fmt1(v)},
+  {name:'Sector 3 · Enduro', game:(s,d)=>gEnduro(s,d,60), bern:()=>6+Math.floor(Math.random()*3)+D().bernEnduro, win:(t,b)=>t>=b, f:v=>v+' auto'+(v===1?'':'s')},
 ];
 function runSector(k){
   const sc=SECTORS[k];
