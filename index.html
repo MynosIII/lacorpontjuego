@@ -542,7 +542,7 @@ const BEATS=[
     'En el mundo de la Formula 1 Virtual nada vende más que el duelo entre Tara Trent y Leandro. Desde que debutaron en la misma parrilla, ambos se reparten victorias, toques y titulares.',
     'Por encima de todos está Bern Ravenrock, presidente de la organización. Bern decide reglamentos, sanciones y quién recibe cada actualización del simulador. Nunca ocultó que le molesta ver a una mujer en lo más alto de su liga y con ayuda de, Miguel Maso, su mano derecha, hará todo lo posible para que Tara quede fuera de juego.',
     '<span class="note">Ayuda a Tara. La temporada tiene cinco carreras. Si terminás con una <b>posición media de 3,0 o mejor</b>, Tara podrá finalmente enfrentar a Bern.</span>'
-  ], cta:'Ir a la primera carrera'},
+  ], cta:'Continuar'},
   {src:'Prensa · Conferencia post-carrera', title:'Los representantes entran en escena', img:'02-representantes.webp', paras:[
     'Viktor, el representante de Leandro, toma el micrófono antes que su piloto. Dice que Tara “tiene mejoras ilegales en su monoplaza” y que la liga debería revisar sus reglajes.',
     'El representante de Tara le contesta en redes y en una hora el cruce es tendencia. Desde el palco, Bern sonríe.'
@@ -592,7 +592,7 @@ function comicBlock(b){
   if(!b.img) return { body: text+notes };
   return { body: `<figure class="comic-page"><a href="${COMIC_DIR}${b.img}" target="_blank" rel="noopener" title="Abrir la página a tamaño completo"><img src="${COMIC_DIR}${b.img}" alt="Cómic: ${b.title}" width="1448" height="1086" decoding="async"></a></figure>
     <p class="zoom-hint">Tocá la página para verla a tamaño completo</p>
-    ${notes}<details class="lore-text"><summary>Leer el texto</summary>${text}</details>` };
+    ${notes}${text?`<details class="lore-text"><summary>Leer el texto</summary>${text}</details>`:''}` };
 }
 function storyScreen(b, next, extra=''){
   stopGame();
@@ -746,7 +746,9 @@ function ending(kind){
   $('#go').onclick=start;
 }
 
-function start(){ stopGame(); reset(); S.phase='story0'; storyScreen(BEATS[0], raceIntro); }
+/* Después del prólogo en texto viene su página de cómic, y recién ahí la carrera 1. */
+const PROLOGO_COMIC={src:'Liga Ravenrock · Temporada 7', title:'Años de rivalidad', img:'01-prologo.webp', paras:[], cta:'Ir a la primera carrera'};
+function start(){ stopGame(); reset(); S.phase='story0'; storyScreen(BEATS[0], ()=>storyScreen(PROLOGO_COMIC, raceIntro)); }
 start();
 </script>
 </body>
