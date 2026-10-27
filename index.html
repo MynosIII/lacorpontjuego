@@ -125,6 +125,17 @@ canvas{display:block;border-radius:6px;max-width:100%}
 .sector .w{font-weight:700}.sector .w.t{color:var(--good)}.sector .w.b{color:var(--bad)}
 .tablewrap{overflow-x:auto}
 #cv{touch-action:none}
+/* cómics de lore: la página se sale de la columna para leerse grande */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.comic-page{margin:0 0 14px;width:min(1100px, calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%);aspect-ratio:4/3;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.comic-page img{display:block;width:100%;height:100%;object-fit:contain}
+.comic-page a{display:block;height:100%;cursor:zoom-in}
+.zoom-hint{display:none;margin:-6px 0 10px;font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+@media (max-width:700px){.zoom-hint{display:block}}
+.story.comic .eyebrow{margin-bottom:12px}
+.lore-text{max-width:62ch;margin:6px 0 4px;color:var(--muted)}
+.lore-text summary{cursor:pointer;font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.lore-text p{margin:10px 0 0;color:var(--ink)}
 /* demos */
 .howwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:16px;align-items:start}
 .howwrap.single{grid-template-columns:minmax(0,340px);margin-top:14px}
@@ -527,24 +538,24 @@ const RACES=[
 ];
 
 const BEATS=[
-  {src:'Liga Ravenrock · Temporada 7', title:'Años de rivalidad', paras:[
+  {src:'Liga Ravenrock · Temporada 7', title:'Años de rivalidad', img:'01-prologo.webp', paras:[
     'En el mundo de la Formula 1 Virtual nada vende más que el duelo entre Tara y Leandro. Desde que debutaron en la misma parrilla, ambos se reparten victorias, toques y titulares.',
     'Por encima de todos está Bern Ravenrock, presidente de la organización. Bern decide reglamentos, sanciones y quién recibe cada actualización del simulador. Nunca ocultó que le molesta ver a una mujer en lo más alto de su liga y con ayuda de, Miguel Maso, su mano derecha, hará todo lo posible para que Tara quede fuera de juego.',
     '<span class="note">Ayuda a Tara. La temporada tiene cinco carreras. Si terminás con una <b>posición media de 3,0 o mejor</b>, Tara podrá finalmente enfrentar a Bern.</span>'
   ], cta:'Ir a la primera carrera'},
-  {src:'Prensa · Conferencia post-carrera', title:'Los representantes entran en escena', paras:[
+  {src:'Prensa · Conferencia post-carrera', title:'Los representantes entran en escena', img:'02-representantes.webp', paras:[
     'Viktor, el representante de Leandro, toma el micrófono antes que su piloto. Dice que Tara “tiene mejoras ilegales en su monoplaza” y que la liga debería revisar sus reglajes.',
     'El representante de Tara le contesta en redes y en una hora el cruce es tendencia. Desde el palco, Bern sonríe.'
   ]},
-  {src:'Paddock · Box de Leandro', title:'Mensajes que no debía ver', paras:[
+  {src:'Paddock · Box de Leandro', title:'Mensajes que no debía ver', img:'03-mensajes.webp', paras:[
     'Leandro usa la tablet de Viktor para revisar telemetrías y encuentra otra cosa: mensajes con Bern. Reglajes filtrados, penalizaciones arregladas y una lista de pilotos a frenar. El nombre de Tara está primero.',
     'Viktor no lo representa, lo usa en beneficio de Bern. Y Bern le paga para eso.'
   ]},
-  {src:'Radio del equipo', title:'Un aliado inesperado', paras:[
+  {src:'Radio del equipo', title:'Un aliado inesperado', img:'04-aliado.webp', paras:[
     'Leandro aparece en el box de Tara con la tablet en la mano: “Años chocándonos y el problema estaba en el palco.”',
     'Despide a Viktor y se suma al equipo de su rival para derrotar a Bern. El plan es llegar a la última carrera con resultados suficientes para desafiarlo frente a todos y exponer sus artimañas.'
   ]},
-  {src:'Sala de control · Madrugada', title:'Bern se entera', paras:[
+  {src:'Sala de control · Madrugada', title:'Bern se entera', img:'05-bern-se-entera.webp', paras:[
     'Viktor le cuenta de la decisión de Leandro a Bern. Esa misma noche, alguien con credenciales de la organización entra al simulador de Leandro y le quita potencia de frenado.',
     'Nadie en el equipo de Tara lo sabe todavía.'
   ]},
@@ -573,10 +584,21 @@ function renderPips(){
 }
 function show(html){ stopDemo(); screenEl.innerHTML=html; renderPips(); window.scrollTo(0,0); const b=screenEl.querySelector('.btn'); if(b) b.focus({preventScroll:true}); }
 
+/* Cada pantalla de lore se muestra como una página de cómic; el texto queda disponible debajo. */
+const COMIC_DIR='comics/';
+function comicBlock(b){
+  const notes=b.paras.filter(p=>p.startsWith('<span class="note">')).map(p=>`<p class="note">${p.slice(19,-7)}</p>`).join('');
+  const text=b.paras.filter(p=>!p.startsWith('<span class="note">')).map(p=>`<p>${p}</p>`).join('');
+  if(!b.img) return { body: text+notes };
+  return { body: `<figure class="comic-page"><a href="${COMIC_DIR}${b.img}" target="_blank" rel="noopener" title="Abrir la página a tamaño completo"><img src="${COMIC_DIR}${b.img}" alt="Cómic: ${b.title}" width="1448" height="1086" decoding="async"></a></figure>
+    <p class="zoom-hint">Tocá la página para verla a tamaño completo</p>
+    ${notes}<details class="lore-text"><summary>Leer el texto</summary>${text}</details>` };
+}
 function storyScreen(b, next, extra=''){
   stopGame();
-  show(`<section class="story"><div class="eyebrow">${b.src}</div><h1>${b.title}</h1>
-    ${b.paras.map(p=>p.startsWith('<span class="note">')?`<p class="note">${p.slice(19,-7)}</p>`:`<p>${p}</p>`).join('')}${extra}
+  const c=comicBlock(b);
+  show(`<section class="story${b.img?' comic':''}"><div class="eyebrow">${b.src}</div><h1${b.img?' class="sr-only"':''}>${b.title}</h1>
+    ${c.body}${extra}
     <button class="btn" type="button" id="go">${b.cta||'Continuar'}</button></section>`);
   $('#go').onclick=next;
 }
@@ -635,7 +657,7 @@ function raceResult(){
 
 function afterSeason(){
   const a=avg(), ok=a<=3;
-  storyScreen({src:'Transmisión oficial · Vuelta 12', title:'Sin frenos', paras:[
+  storyScreen({src:'Transmisión oficial · Vuelta 12', title:'Sin frenos', img:'06-sin-frenos.webp', paras:[
     'Curva 1 del Autódromo Ravenrock. El auto de Leandro llega a fondo y no reduce. Se ve el impacto contra las barreras y la señal se corta.',
     'Los comisarios no informan nada. Nadie dice si está vivo.',
     `<span class="note">Tu posición media en la temporada: <b>${fmt1(a)}</b>. ${ok?'Te alcanza para desafiar a Bern.':'No alcanza el 3,0 que hace falta para desafiar a Bern.'}</span>`
@@ -643,10 +665,10 @@ function afterSeason(){
 }
 
 function challenge(){
-  storyScreen({src:'Paddock · Conferencia de prensa', title:'Tara desafía a Bern', paras:[
+  storyScreen({src:'Paddock · Conferencia de prensa', title:'Tara desafía a Bern', img:'07-desafio.webp', paras:[
     `Con una posición media de ${fmt1(avg())} Tara pide en frente a todas las cámaras: una carrera contra Bern Ravenrock.`,
     'La polémica explota. Bern acepta enseguida. Cree que sus autos ya están preparados para ganar.'
-  ]}, ()=>storyScreen({src:'Oficina de la presidencia', title:'Miguel Maso cambia de lado', paras:[
+  ]}, ()=>storyScreen({src:'Oficina de la presidencia', title:'Miguel Maso cambia de lado', img:'08-miguel.webp', paras:[
     'En medio del escándalo le llegan a Miguel las pruebas: los mensajes con Viktor, los reglajes manipulados y el registro de acceso al simulador de Leandro.',
     'Miguel deja entrar a un grupo de periodistas a la sala técnica. Delante de ellos, los dos autos quedan con el mismo reglaje. Por primera vez, la carrera va a ser limpia.'
   ], cta:'A la carrera final'}, finalIntro));
@@ -697,16 +719,16 @@ function sectorCard(k){
 
 /* ---------- finales ---------- */
 const ENDINGS={
-  win:{src:'Final 1 de 3', title:'Tara gana', paras:[
+  win:{src:'Final 1 de 3', title:'Tara gana', img:'09-tara-gana.webp', paras:[
     'Tara cruza la meta primero. Con los autos iguales, Bern no tuvo con qué responder.',
     'Esa misma noche los periodistas publican todo: los mensajes, los reglajes, el acceso al simulador de Leandro. La junta suspende a Bern y a Viktor, y Miguel declara como testigo.',
     'En el podio hay un lugar vacío. Todavía no se sabe nada de Leandro.'
   ]},
-  lose:{src:'Final 2 de 3', title:'Bern gana', paras:[
+  lose:{src:'Final 2 de 3', title:'Bern gana', img:'10-bern-gana.webp', paras:[
     'Bern cruza primero y levanta los brazos frente a su propio palco. Con los autos iguales, esta vez no le hizo falta hacer trampa.',
     'Los periodistas tienen las pruebas, pero la victoria de Bern se lleva los titulares y la junta posterga la investigación.'
   ]},
-  out:{src:'Final 3 de 3', title:'Tara no corre', paras:[
+  out:{src:'Final 3 de 3', title:'Tara no corre', img:'11-tara-no-corre.webp', paras:[
     'Sin una posición media de 3,0 no hay desafío. Sin resultados no hay tribuna, y sin tribuna nadie escucha lo que encontró Leandro.',
     'Bern cierra la temporada entregando trofeos. El accidente de Leandro queda archivado como “falla técnica” y la tablet de Viktor desaparece.',
     'Ravenrock sigue mandando. Por ahora.'
@@ -715,7 +737,7 @@ const ENDINGS={
 function ending(kind){
   S.phase='end'; stopGame(); const e=ENDINGS[kind];
   const rows=S.res.map((r,i)=>`<tr><td>${i+1}</td><td>${RACES[i].name}</td><td>P${r.pos}</td><td>${r.detail}</td></tr>`).join('');
-  show(`<section class="story"><div class="eyebrow">${e.src}</div><h1>${e.title}</h1>${e.paras.map(p=>`<p>${p}</p>`).join('')}
+  show(`<section class="story comic"><div class="eyebrow">${e.src}</div><h1 class="sr-only">${e.title}</h1>${comicBlock(e).body}
     <h2 style="margin-top:26px">Tu temporada</h2>
     <div class="tablewrap"><table class="sum"><thead><tr><th>#</th><th>Carrera</th><th>Pos.</th><th>Detalle</th></tr></thead><tbody>${rows}
       <tr><td></td><td><b>Posición media</b></td><td><b>${fmt1(avg())}</b></td><td>${avg()<=3?'Clasificada para enfrentar a Bern':'Necesitabas 3,0 o mejor'}</td></tr></tbody></table></div>

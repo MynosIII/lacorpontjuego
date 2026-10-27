@@ -4,3 +4,4 @@ Juego web de carreras virtuales. Sos Tara: corrés cinco carreras, cada una con 
 
 - 3 finales: Tara gana, Bern gana, Tara no corre.
 - Un solo archivo: `index.html`. Abrilo en el navegador para jugar.
+- Las pantallas de lore son páginas de cómic en `comics/` (WebP, 1448 × 1086, formato 4:3), generadas con ChatGPT a partir de una hoja de personajes común.
