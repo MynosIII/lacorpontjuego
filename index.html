@@ -38,6 +38,9 @@ body{background:var(--asphalt);color:var(--ink);font-family:var(--f-body);font-s
 .pip.done{background:var(--panel);color:var(--ink)}
 .pip.fin{border-style:dashed}
 main{padding-block:28px 0}
+/* pantalla de inicio: sin la barra de marca y carreras, el título va arriba de todo */
+body.home .top{display:none}
+body.home main{padding-block:20px 0}
 .eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
 h1{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,6vw,3rem);line-height:1.02;margin:0 0 18px;text-wrap:balance;text-transform:uppercase;letter-spacing:.01em}
 h2{font-family:var(--f-display);font-weight:600;font-size:1.3rem;margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em}
@@ -583,7 +586,7 @@ function renderPips(){
   const f=S.final; h+=`<div class="pip fin ${f?'done':''} ${S.phase==='final'?'now':''}" title="Final contra Bern">${f?(f.win?'P1':'P2'):'FIN'}</div>`;
   $('#pips').innerHTML=h;
 }
-function show(html){ stopDemo(); screenEl.innerHTML=html; renderPips(); window.scrollTo(0,0); const b=screenEl.querySelector('.btn'); if(b) b.focus({preventScroll:true}); }
+function show(html){ stopDemo(); document.body.classList.remove('home'); screenEl.innerHTML=html; renderPips(); window.scrollTo(0,0); const b=screenEl.querySelector('.btn'); if(b) b.focus({preventScroll:true}); }
 
 /* Cada pantalla de lore se muestra como una página de cómic; el texto queda disponible debajo. */
 const COMIC_DIR='comics/';
@@ -752,7 +755,7 @@ function ending(kind){
 const PROLOGO_COMIC={src:'Liga Ravenrock · Temporada 7', title:'Años de rivalidad', img:'01-prologo.webp', paras:[], cta:'Ir a la primera carrera'};
 function start(){ stopGame(); reset(); S.phase='story0'; storyScreen(BEATS[0], ()=>storyScreen(PROLOGO_COMIC, raceIntro)); }
 /* Pantalla de entrada: invita a jugar, escuchar el radioteatro o leer el storyboard. */
-function home(){ stopGame(); reset(); S.phase='story0'; show('<div id="hub"></div>'); if(window.renderHub) renderHub($('#hub'), start); else start(); }
+function home(){ stopGame(); reset(); S.phase='story0'; show('<div id="hub"></div>'); document.body.classList.add('home'); if(window.renderHub) renderHub($('#hub'), start); else start(); }
 home();
 </script>
 </body>

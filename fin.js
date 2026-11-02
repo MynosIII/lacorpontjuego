@@ -116,8 +116,7 @@
   window.renderHub = function (el, onPlay) {
     css();
     el.innerHTML = `<section class="hub" aria-label="Elegí por dónde empezar">
-      <div class="fin-eyebrow">Fórmula 1 Virtual · Liga Ravenrock</div>
-      <h1 class="fin-titulo" style="font-size:clamp(2.4rem,8vw,4.2rem)">Tara contra Ravenrock</h1>
+      <h1 class="fin-titulo" style="font-size:clamp(2.4rem,8vw,4.2rem)">La Fórmula Uno Virtual</h1>
       <p class="hub-lead">Una historia de carreras, trampas y poder contada en tres partes. Empezá por donde quieras: cada una muestra algo que las otras no.</p>
       <div class="hub-grid">
         <button type="button" class="hub-card main" data-play>
