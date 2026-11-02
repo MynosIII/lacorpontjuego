@@ -751,7 +751,9 @@ function ending(kind){
 /* Después del prólogo en texto viene su página de cómic, y recién ahí la carrera 1. */
 const PROLOGO_COMIC={src:'Liga Ravenrock · Temporada 7', title:'Años de rivalidad', img:'01-prologo.webp', paras:[], cta:'Ir a la primera carrera'};
 function start(){ stopGame(); reset(); S.phase='story0'; storyScreen(BEATS[0], ()=>storyScreen(PROLOGO_COMIC, raceIntro)); }
-start();
+/* Pantalla de entrada: invita a jugar, escuchar el radioteatro o leer el storyboard. */
+function home(){ stopGame(); reset(); S.phase='story0'; show('<div id="hub"></div>'); if(window.renderHub) renderHub($('#hub'), start); else start(); }
+home();
 </script>
 </body>
 </html>

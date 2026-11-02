@@ -37,7 +37,7 @@
   ];
 
   const CSS = `
-  .fin{display:flex;flex-direction:column;gap:18px;margin-block:28px 28px}
+  .cierre{display:flex;flex-direction:column;gap:18px;margin-block:28px 28px}
   .fin-eyebrow{font-family:var(--f-mono,monospace);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal,#38cfc6)}
   .fin-titulo{font-family:var(--f-display,sans-serif);font-weight:800;font-size:clamp(1.6rem,4.6vw,2.4rem);line-height:1.05;text-transform:uppercase;margin:0;text-wrap:balance;color:var(--ink,#e7ebf0)}
   .fin-texto{max-width:62ch;margin:0;color:var(--ink,#e7ebf0);line-height:1.6}
@@ -54,7 +54,25 @@
   .fin-op .tag{font-family:var(--f-mono,monospace);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--amber,#ffb81c)}
   .fin-op .t{font-family:var(--f-display,sans-serif);font-weight:600;font-size:1.15rem;line-height:1.15;text-transform:uppercase;letter-spacing:.02em}
   .fin-op .m{font-size:.8rem;color:var(--muted,#8b97a7)}
-  @media (prefers-reduced-motion:reduce){.fin-cta,.fin-op{transition:none}}`;
+  @media (prefers-reduced-motion:reduce){.fin-cta,.fin-op{transition:none}}
+  .hub{display:flex;flex-direction:column;gap:20px;padding-block:8px 24px}
+  .hub-lead{max-width:60ch;margin:0;color:var(--ink,#e7ebf0);font-size:1.05rem}
+  .hub-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px}
+  @media (max-width:720px){.hub-grid{grid-template-columns:1fr}}
+  .hub-card{position:relative;display:flex;flex-direction:column;gap:8px;min-height:190px;padding:20px;border:1px solid var(--line,#2b3441);border-radius:10px;background:var(--panel,#1a2029);color:var(--ink,#e7ebf0);text-decoration:none;text-align:left;font:inherit;cursor:pointer;overflow:hidden;transition:border-color .15s ease,transform .15s ease}
+  .hub-card:hover{border-color:var(--amber,#ffb81c);transform:translateY(-3px)}
+  .hub-card:focus-visible{outline:3px solid var(--teal,#38cfc6);outline-offset:3px}
+  .hub-card.main{background:var(--amber,#ffb81c);color:#1a1300;border-color:var(--amber,#ffb81c)}
+  .hub-card .n{font-family:var(--f-mono,monospace);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber,#ffb81c)}
+  .hub-card.main .n{color:#1a1300;opacity:.7}
+  .hub-card .t{font-family:var(--f-display,sans-serif);font-weight:800;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1;text-transform:uppercase}
+  .hub-card .d{font-size:.9rem;line-height:1.45;opacity:.85;flex:1}
+  .hub-card .go{font-family:var(--f-display,sans-serif);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:1rem}
+  .hub-card.photo{background-size:cover;background-position:center}
+  .hub-card.photo::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,21,28,.35),rgba(17,21,28,.92))}
+  .hub-card.photo > *{position:relative}
+  .hub-foot{font-size:.85rem;color:var(--muted,#8b97a7)}
+  .hub-foot a{color:var(--teal,#38cfc6)}`;
 
   function css() {
     if (document.getElementById('fin-css')) return;
@@ -67,7 +85,7 @@
     css();
     const v = VARIANTES[variante];
     const ops = OPCIONES.filter(o => o.id !== actual || o.id === 'juego');
-    el.innerHTML = `<section class="fin" aria-label="Qué hacer ahora">
+    el.innerHTML = `<section class="cierre" aria-label="Qué hacer ahora">
       <div class="fin-eyebrow">${v.eyebrow}</div>
       <h2 class="fin-titulo">${v.titulo}</h2>
       <p class="fin-texto">${v.texto}</p>
@@ -78,5 +96,37 @@
         : `<a class="fin-op" href="${o.href}"><span class="tag">${o.tag}</span><span class="t">${o.titulo}</span><span class="m">${o.meta}</span></a>`).join('')}</div>
     </section>`;
     const r = el.querySelector('[data-replay]'); if (r) r.addEventListener('click', onReplay);
+  };
+
+  /* Pantalla de entrada: invita a explorar las tres partes de la historia. onPlay arranca el juego. */
+  window.renderHub = function (el, onPlay) {
+    css();
+    el.innerHTML = `<section class="hub" aria-label="Elegí por dónde empezar">
+      <div class="fin-eyebrow">Fórmula 1 Virtual · Liga Ravenrock</div>
+      <h1 class="fin-titulo" style="font-size:clamp(2.4rem,8vw,4.2rem)">Tara contra Ravenrock</h1>
+      <p class="hub-lead">Una historia de carreras, trampas y poder contada en tres partes. Empezá por donde quieras: cada una muestra algo que las otras no.</p>
+      <div class="hub-grid">
+        <button type="button" class="hub-card main" data-play>
+          <span class="n">01 · Juego</span>
+          <span class="t">Corré como Tara</span>
+          <span class="d">Cinco carreras y una final contra Bern Ravenrock. Tu posición media decide cuál de los tres finales ves.</span>
+          <span class="go">Jugar →</span>
+        </button>
+        <a class="hub-card photo" href="radioteatro.html" style="background-image:url(extras/fondo-1.webp)">
+          <span class="n">02 · Radioteatro</span>
+          <span class="t">Cómo nació la Fórmula 1 Virtual</span>
+          <span class="d">Escuchalo con auriculares: 50 segundos.</span>
+          <span class="go">Escuchar →</span>
+        </a>
+        <a class="hub-card photo" href="storyboard.html" style="background-image:url(extras/storyboard.jpg);background-position:center 20%">
+          <span class="n">03 · Storyboard</span>
+          <span class="t">Cómo se descubrió la conspiración</span>
+          <span class="d">Nueve viñetas sobre quienes encontraron las pruebas contra Bern.</span>
+          <span class="go">Leer →</span>
+        </a>
+      </div>
+      <p class="hub-foot">¿Te interesa la Fórmula 1 real? <a href="${DASHBOARD}" target="_blank" rel="noopener">Mirá quién fue mejor de verdad en nuestro dashboard</a>.</p>
+    </section>`;
+    el.querySelector('[data-play]').addEventListener('click', onPlay);
   };
 })();
