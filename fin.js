@@ -57,8 +57,8 @@
   @media (prefers-reduced-motion:reduce){.fin-cta,.fin-op{transition:none}}
   .hub{display:flex;flex-direction:column;gap:20px;padding-block:8px 24px}
   .hub-lead{max-width:60ch;margin:0;color:var(--ink,#e7ebf0);font-size:1.05rem}
-  .hub-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px}
-  @media (max-width:720px){.hub-grid{grid-template-columns:1fr}}
+  .hub-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-auto-rows:1fr;gap:12px}
+  @media (max-width:720px){.hub-grid{grid-template-columns:1fr;grid-auto-rows:auto}}
   .hub-card{position:relative;display:flex;flex-direction:column;gap:8px;min-height:190px;padding:20px;border:1px solid var(--line,#2b3441);border-radius:10px;background:var(--panel,#1a2029);color:var(--ink,#e7ebf0);text-decoration:none;text-align:left;font:inherit;cursor:pointer;overflow:hidden;transition:border-color .15s ease,transform .15s ease}
   .hub-card:hover{border-color:var(--amber,#ffb81c);transform:translateY(-3px)}
   .hub-card:focus-visible{outline:3px solid var(--teal,#38cfc6);outline-offset:3px}
@@ -71,8 +71,18 @@
   .hub-card.photo{background-size:cover;background-position:center}
   .hub-card.photo::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,21,28,.35),rgba(17,21,28,.92))}
   .hub-card.photo > *{position:relative}
-  .hub-foot{font-size:.85rem;color:var(--muted,#8b97a7)}
-  .hub-foot a{color:var(--teal,#38cfc6)}`;
+  /* tarjeta ancha al dashboard: ocupa las tres columnas y tiene el alto de las de arriba */
+  .hub-card.wide{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between;gap:24px;padding:24px 28px;border-color:var(--teal,#38cfc6);background-size:cover;background-position:center 60%}
+  .hub-card.wide::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,21,28,.96) 0%,rgba(17,21,28,.82) 55%,rgba(17,21,28,.45) 100%)}
+  .hub-card.wide > *{position:relative}
+  .hub-card.wide:hover{border-color:var(--teal,#38cfc6);box-shadow:0 0 0 1px var(--teal,#38cfc6),0 14px 40px rgba(56,207,198,.18)}
+  .hub-card.wide .n{color:var(--teal,#38cfc6)}
+  .hub-card.wide .txt{display:flex;flex-direction:column;gap:10px;max-width:60ch}
+  .hub-card.wide .t{font-size:clamp(1.7rem,4.4vw,2.6rem)}
+  .hub-card.wide .d{flex:none;font-size:1rem}
+  .hub-card.wide .btn-dash{flex:none;display:flex;align-items:center;gap:12px;padding:16px 22px;border-radius:8px;background:var(--teal,#38cfc6);color:#06201e;font-family:var(--f-display,sans-serif);font-weight:800;font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+  .hub-card.wide .btn-dash span{font-size:1.5em;line-height:1}
+  @media (max-width:720px){.hub-card.wide{flex-direction:column;align-items:flex-start}.hub-card.wide .btn-dash{white-space:normal}}`;
 
   function css() {
     if (document.getElementById('fin-css')) return;
@@ -124,8 +134,15 @@
           <span class="d">Nueve viñetas sobre quienes encontraron las pruebas contra Bern.</span>
           <span class="go">Leer →</span>
         </a>
+        <a class="hub-card wide" href="${DASHBOARD}" target="_blank" rel="noopener" style="background-image:url(extras/fondo-4.webp)">
+          <span class="txt">
+            <span class="n">Fórmula 1 real · Dashboard</span>
+            <span class="t">¿Quién fue mejor de verdad?</span>
+            <span class="d">En la Fórmula 1 real los autos nunca son iguales. Nuestro dashboard separa el talento del auto y compara pilotos de todas las épocas.</span>
+          </span>
+          <span class="btn-dash">Ver el dashboard <span aria-hidden="true">→</span></span>
+        </a>
       </div>
-      <p class="hub-foot">¿Te interesa la Fórmula 1 real? <a href="${DASHBOARD}" target="_blank" rel="noopener">Mirá quién fue mejor de verdad en nuestro dashboard</a>.</p>
     </section>`;
     el.querySelector('[data-play]').addEventListener('click', onPlay);
   };
