@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radioteatro · Tara contra Ravenrock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: escenario a pantalla completa con el fondo del tramo actual; abajo, ondas de sonido, controles y capítulos. Tema oscuro único, igual que el juego. */
+:root{
+  --asphalt:#11151c; --panel:#1a2029; --line:#2b3441; --ink:#e7ebf0; --muted:#8b97a7;
+  --amber:#ffb81c; --teal:#38cfc6;
+  --f-display:"Saira Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--asphalt);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+a{color:inherit}
+.top{position:absolute;inset:0 0 auto 0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.25rem;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
+.brand em{font-style:normal;color:var(--amber)} .brand span{color:var(--muted);font-weight:600;text-transform:lowercase;letter-spacing:0;margin-inline:.2em}
+.back{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);text-decoration:none;border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:4px;background:rgba(17,21,28,.5)}
+.back:hover{color:var(--ink);border-color:var(--amber)}
+
+/* escenario */
+.stage{position:relative;min-height:100vh;min-height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.04);transition:opacity 1.6s ease}
+.bg.on{opacity:1;animation:kenburns 26s ease-out forwards}
+@keyframes kenburns{from{transform:scale(1.04)}to{transform:scale(1.14)}}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,21,28,.55) 0%,rgba(17,21,28,.1) 30%,rgba(17,21,28,.55) 62%,rgba(17,21,28,.97) 100%)}
+.content{position:relative;z-index:2;padding:0 20px calc(26px + env(safe-area-inset-bottom,0px));max-width:1100px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(2.2rem,7vw,4.4rem);line-height:.95;margin:0;text-transform:uppercase;text-wrap:balance;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+.chapter{font-family:var(--f-display);font-weight:600;font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);min-height:1.4em}
+canvas#wave{width:100%;height:120px;display:block}
+.controls{display:flex;align-items:center;gap:16px}
+.play{flex:none;width:68px;height:68px;border-radius:50%;border:0;background:var(--amber);color:#1a1300;cursor:pointer;display:grid;place-items:center;box-shadow:0 0 0 0 rgba(255,184,28,.5);transition:transform .15s ease}
+.play:hover{transform:scale(1.05)}
+.play:focus-visible,.end:focus-visible,.bar:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.play.idle{animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,184,28,.55)}80%,100%{box-shadow:0 0 0 22px rgba(255,184,28,0)}}
+.play svg{width:28px;height:28px}
+.timeline{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.bar{position:relative;height:10px;border-radius:5px;background:rgba(255,255,255,.14);cursor:pointer;touch-action:none}
+.bar .fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:5px;background:linear-gradient(90deg,var(--teal),var(--amber))}
+.bar .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(17,21,28,.9)}
+.times{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.end{flex:none;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:transparent;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:8px 10px;cursor:pointer}
+.end:hover{color:var(--ink);border-color:var(--amber)}
+.chapters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.chapters button{all:unset;cursor:pointer;padding:6px 0;border-top:2px solid rgba(255,255,255,.15);text-align:left;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chapters button.on{border-color:var(--amber);color:var(--ink)}
+.chapters button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.chapters b{display:block;font-weight:700;color:var(--amber)}
+@media (max-width:560px){.chapters span{display:none}.end{display:none}}
+
+/* cierre */
+.after{background:var(--asphalt);padding:44px 20px calc(48px + env(safe-area-inset-bottom,0px))}
+.after-inner{max-width:900px;margin:0 auto}
+.after[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.bg.on{animation:none}.play.idle{animation:none}.bg{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./"><em>Tara</em><span>contra</span>Ravenrock</a>
+  <a class="back" href="./">Volver al juego</a>
+</header>
+
+<main>
+  <section class="stage" aria-label="Radioteatro">
+    <div class="bg on" style="background-image:url(extras/fondo-1.webp)"></div>
+    <div class="bg" style="background-image:url(extras/fondo-2.webp)"></div>
+    <div class="bg" style="background-image:url(extras/fondo-3.webp)"></div>
+    <div class="bg" style="background-image:url(extras/fondo-4.webp)"></div>
+    <div class="shade"></div>
+
+    <div class="content">
+      <div class="eyebrow">Radioteatro · Fórmula 1 Virtual</div>
+      <h1>Cómo nació la Fórmula 1 Virtual</h1>
+      <div class="chapter" id="chapter" aria-live="polite">Tocá play para escuchar</div>
+      <canvas id="wave" aria-hidden="true"></canvas>
+      <div class="controls">
+        <button class="play idle" id="play" type="button" aria-label="Reproducir">
+          <svg id="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="timeline">
+          <div class="bar" id="bar" role="slider" tabindex="0" aria-label="Posición del audio" aria-valuemin="0" aria-valuemax="50" aria-valuenow="0">
+            <div class="fill" id="fill"></div>
+          </div>
+          <div class="times"><span id="cur">0:00</span><span id="dur">0:50</span></div>
+        </div>
+        <button class="end" id="end" type="button">Terminar</button>
+      </div>
+      <div class="chapters" id="chapters"></div>
+    </div>
+  </section>
+
+  <section class="after" id="after" hidden>
+    <div class="after-inner" id="fin"></div>
+  </section>
+</main>
+
+<audio id="audio" src="extras/radioteatro.mp3" preload="metadata"></audio>
+<script src="fin.js"></script>
+<script>
+// Tramos del audio: cada uno cambia el fondo. Los fondos venían cortados para 72 s (0, 24, 36 y 51 s);
+// como el audio dura otra cosa, los cortes se escalan en la misma proporción a la duración real.
+const CORTES_ORIGINALES = 72;
+const CAPITULOS = [
+  { base: 0,  titulo: 'El duelo' },
+  { base: 24, titulo: 'Fuera de pista' },
+  { base: 36, titulo: 'El accidente' },
+  { base: 51, titulo: 'Bandera a cuadros' },
+].map(c => ({ ...c, desde: c.base }));
+function escalarCapitulos(d) { CAPITULOS.forEach(c => c.desde = c.base / CORTES_ORIGINALES * d); }
+const audio = document.getElementById('audio'), playBtn = document.getElementById('play'), ico = document.getElementById('ico');
+const bgs = [...document.querySelectorAll('.bg')], fill = document.getElementById('fill'), bar = document.getElementById('bar');
+const cur = document.getElementById('cur'), dur = document.getElementById('dur'), chapterEl = document.getElementById('chapter');
+const chaptersEl = document.getElementById('chapters'), after = document.getElementById('after');
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+let total = 50, actual = 0;
+escalarCapitulos(total);
+function pintarCapitulos() { chaptersEl.innerHTML = CAPITULOS.map((c, i) => `<button type="button" data-i="${i}" class="${i === actual ? 'on' : ''}"><b>${fmt(c.desde)}</b><span>${c.titulo}</span></button>`).join(''); }
+pintarCapitulos();
+chaptersEl.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; audio.currentTime = CAPITULOS[+b.dataset.i].desde; if (audio.paused) toggle(); });
+
+function marcas() {
+  bar.querySelectorAll('.tick').forEach(t => t.remove());
+  CAPITULOS.slice(1).forEach(c => { const t = document.createElement('div'); t.className = 'tick'; t.style.left = (c.desde / total * 100) + '%'; bar.appendChild(t); });
+}
+marcas();
+audio.addEventListener('loadedmetadata', () => { if (isFinite(audio.duration)) { total = audio.duration; escalarCapitulos(total); pintarCapitulos(); dur.textContent = fmt(total); bar.setAttribute('aria-valuemax', Math.round(total)); marcas(); } });
+
+function capitulo(t) { let i = 0; CAPITULOS.forEach((c, k) => { if (t >= c.desde) i = k; }); return i; }
+function setCapitulo(i) {
+  if (!audio.paused || audio.currentTime > 0) chapterEl.textContent = `${String(i + 1).padStart(2, '0')} · ${CAPITULOS[i].titulo}`;
+  chaptersEl.querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === i));
+  if (i === actual && bgs[i].classList.contains('on')) return;
+  actual = i;
+  bgs.forEach((b, k) => { if (k === i) { b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); } else b.classList.remove('on'); });
+}
+audio.addEventListener('timeupdate', () => {
+  const t = audio.currentTime;
+  fill.style.width = (t / total * 100) + '%'; cur.textContent = fmt(t); bar.setAttribute('aria-valuenow', Math.round(t));
+  setCapitulo(capitulo(t));
+});
+
+// Web Audio: el analizador alimenta las ondas. Se crea con el primer play (los navegadores lo exigen).
+let ctx = null, analyser = null, freq = null, time = null;
+function initAudio() {
+  if (ctx) return;
+  try {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaElementSource(audio);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.82;
+    src.connect(analyser); analyser.connect(ctx.destination);
+    freq = new Uint8Array(analyser.frequencyBinCount); time = new Uint8Array(analyser.fftSize);
+  } catch (e) { ctx = null; analyser = null; }
+}
+function toggle() {
+  initAudio(); if (ctx && ctx.state === 'suspended') ctx.resume();
+  if (audio.paused) audio.play(); else audio.pause();
+}
+playBtn.addEventListener('click', toggle);
+audio.addEventListener('play', () => { playBtn.classList.remove('idle'); playBtn.setAttribute('aria-label', 'Pausar'); ico.innerHTML = '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'; setCapitulo(capitulo(audio.currentTime)); });
+audio.addEventListener('pause', () => { playBtn.setAttribute('aria-label', 'Reproducir'); ico.innerHTML = '<path d="M8 5v14l11-7z"/>'; });
+audio.addEventListener('ended', terminar);
+document.getElementById('end').addEventListener('click', () => { audio.pause(); terminar(); });
+
+// Barra: clic o arrastre para moverse; flechas del teclado ±5 s.
+function seek(e) { const r = bar.getBoundingClientRect(); audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * total; }
+let drag = false;
+bar.addEventListener('pointerdown', e => { drag = true; bar.setPointerCapture(e.pointerId); seek(e); });
+bar.addEventListener('pointermove', e => { if (drag) seek(e); });
+bar.addEventListener('pointerup', () => drag = false);
+bar.addEventListener('keydown', e => { if (e.key === 'ArrowRight') audio.currentTime = Math.min(total, audio.currentTime + 5); if (e.key === 'ArrowLeft') audio.currentTime = Math.max(0, audio.currentTime - 5); });
+document.addEventListener('keydown', e => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); toggle(); } });
+
+function terminar() {
+  after.hidden = false;
+  renderFin(document.getElementById('fin'), 'radio', { actual: 'radio' });
+  after.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Ondas: barras espejadas desde el centro que siguen la voz; en pausa respiran suave.
+const cv = document.getElementById('wave'), g = cv.getContext('2d');
+function resize() { const d = window.devicePixelRatio || 1; cv.width = cv.clientWidth * d; cv.height = cv.clientHeight * d; g.setTransform(d, 0, 0, d, 0, 0); }
+resize(); addEventListener('resize', resize);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let level = [];
+function draw(now) {
+  const W = cv.clientWidth, H = cv.clientHeight, mid = H / 2;
+  const n = Math.max(24, Math.min(96, Math.floor(W / 11))), gap = 3, bw = W / n - gap;
+  g.clearRect(0, 0, W, H);
+  const playing = analyser && !audio.paused;
+  if (playing) analyser.getByteFrequencyData(freq);
+  for (let i = 0; i < n; i++) {
+    const k = Math.abs(i - (n - 1) / 2) / ((n - 1) / 2);          // 0 en el centro, 1 en los bordes
+    let v;
+    if (playing) { const bin = Math.floor(2 + (1 - k) * 90); v = freq[bin] / 255; }
+    else v = reduce ? 0.08 : 0.06 + 0.05 * (1 + Math.sin(now / 600 + i * 0.45)) / 2;
+    level[i] = (level[i] || 0) * 0.6 + v * 0.4;
+    const h = Math.max(3, level[i] * (H - 8) * (1 - k * 0.35));
+    const x = i * (bw + gap) + gap / 2;
+    const grad = g.createLinearGradient(0, mid - h / 2, 0, mid + h / 2);
+    grad.addColorStop(0, 'rgba(255,184,28,.95)'); grad.addColorStop(.5, 'rgba(255,214,120,1)'); grad.addColorStop(1, 'rgba(56,207,198,.9)');
+    g.fillStyle = grad;
+    g.beginPath(); g.roundRect ? g.roundRect(x, mid - h / 2, bw, h, Math.min(bw / 2, 3)) : g.rect(x, mid - h / 2, bw, h); g.fill();
+  }
+  if (playing) {
+    analyser.getByteTimeDomainData(time);
+    g.strokeStyle = 'rgba(231,235,240,.35)'; g.lineWidth = 1.5; g.beginPath();
+    for (let i = 0; i < time.length; i += 4) { const x = i / (time.length - 1) * W, y = mid + (time[i] - 128) / 128 * (H / 2.2); i ? g.lineTo(x, y) : g.moveTo(x, y); }
+    g.stroke();
+  }
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

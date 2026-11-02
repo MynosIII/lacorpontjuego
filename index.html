@@ -178,6 +178,7 @@ canvas{display:block;border-radius:6px;max-width:100%}
   <main id="screen"></main>
 </div>
 
+<script src="fin.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const screenEl = $('#screen');
@@ -738,12 +739,13 @@ function ending(kind){
   S.phase='end'; stopGame(); const e=ENDINGS[kind];
   const rows=S.res.map((r,i)=>`<tr><td>${i+1}</td><td>${RACES[i].name}</td><td>P${r.pos}</td><td>${r.detail}</td></tr>`).join('');
   show(`<section class="story comic"><div class="eyebrow">${e.src}</div><h1 class="sr-only">${e.title}</h1>${comicBlock(e).body}
+    <div id="fin"></div>
     <h2 style="margin-top:26px">Tu temporada</h2>
     <div class="tablewrap"><table class="sum"><thead><tr><th>#</th><th>Carrera</th><th>Pos.</th><th>Detalle</th></tr></thead><tbody>${rows}
       <tr><td></td><td><b>Posición media</b></td><td><b>${fmt1(avg())}</b></td><td>${avg()<=3?'Clasificada para enfrentar a Bern':'Necesitabas 3,0 o mejor'}</td></tr></tbody></table></div>
-    ${S.sectors&&S.final?`<div class="sectors">${sectorRows()}</div>`:''}
-    <button class="btn" type="button" id="go">Jugar de nuevo</button></section>`);
-  $('#go').onclick=start;
+    ${S.sectors&&S.final?`<div class="sectors">${sectorRows()}</div>`:''}</section>`);
+  // Cierre: texto, botón al dashboard y las tres opciones (fin.js)
+  if(window.renderFin) renderFin($('#fin'), kind==='out' ? 'juegoSinFinal' : 'juego', { onReplay: start });
 }
 
 /* Después del prólogo en texto viene su página de cómic, y recién ahí la carrera 1. */
