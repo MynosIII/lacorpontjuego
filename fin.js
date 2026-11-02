@@ -65,6 +65,10 @@
   .hub-card.main{background:var(--amber,#ffb81c);color:#1a1300;border-color:var(--amber,#ffb81c)}
   .hub-card .n{font-family:var(--f-mono,monospace);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber,#ffb81c)}
   .hub-card.main .n{color:#1a1300;opacity:.7}
+  /* franja con la viñeta de la carrera (Tara y Leandro rueda a rueda) arriba de la tarjeta del juego */
+  .hub-card .pic{display:block;height:118px;margin:-20px -20px 6px;background:url(comics/01-prologo.webp) 58% 9%/175% auto no-repeat;border-bottom:3px solid #1a1300;transition:background-size .4s ease}
+  .hub-card.main:hover .pic{background-size:185% auto}
+  @media (max-width:720px){.hub-card .pic{height:150px;background-size:120% auto}}
   .hub-card .t{font-family:var(--f-display,sans-serif);font-weight:800;font-size:clamp(1.4rem,3.4vw,1.9rem);line-height:1;text-transform:uppercase}
   .hub-card .d{font-size:.9rem;line-height:1.45;opacity:.85;flex:1}
   .hub-card .go{font-family:var(--f-display,sans-serif);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:1rem}
@@ -117,6 +121,7 @@
       <p class="hub-lead">Una historia de carreras, trampas y poder contada en tres partes. Empezá por donde quieras: cada una muestra algo que las otras no.</p>
       <div class="hub-grid">
         <button type="button" class="hub-card main" data-play>
+          <span class="pic" aria-hidden="true"></span>
           <span class="n">01 · Juego</span>
           <span class="t">Corré como Tara</span>
           <span class="d">Cinco carreras y una final contra Bern Ravenrock. Tu posición media decide cuál de los tres finales ves.</span>
